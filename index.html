@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForgeCraft â AI Builds Any Product You Can Imagine</title>
+<meta name="description" content="Describe your problem. ForgeCraft designs, builds, tests, and delivers custom software â fully automated, no engineers needed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #030712;
+  --bg2:       #0f172a;
+  --bg3:       #1e293b;
+  --border:    rgba(255,255,255,0.07);
+  --blue:      #2563eb;
+  --blue-l:    #3b82f6;
+  --cyan:      #06b6d4;
+  --cyan-l:    #67e8f9;
+  --green:     #10b981;
+  --yellow:    #f59e0b;
+  --red:       #ef4444;
+  --purple:    #8b5cf6;
+  --text:      #f1f5f9;
+  --muted:     #94a3b8;
+  --faint:     #475569;
+  --grad:      linear-gradient(135deg, #2563eb, #06b6d4);
+  --grad2:     linear-gradient(135deg, #8b5cf6, #2563eb);
+  --radius:    12px;
+  --radius-lg: 20px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ââ UTILITIES ââ */
+.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+.grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.grad-text-2 {
+  background: var(--grad2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(37,99,235,.12); border: 1px solid rgba(37,99,235,.3);
+  color: var(--blue-l); font-size: 12px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 99px;
+}
+.tag.green  { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); color: #34d399; }
+.tag.purple { background: rgba(139,92,246,.12); border-color: rgba(139,92,246,.3); color: #a78bfa; }
+.tag.yellow { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.3); color: #fbbf24; }
+.tag.red    { background: rgba(239,68,68,.12);  border-color: rgba(239,68,68,.3);  color: #f87171; }
+.section-label { text-align: center; margin-bottom: 16px; }
+.section-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800; line-height: 1.2;
+  text-align: center; margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 18px; color: var(--muted);
+  text-align: center; max-width: 640px;
+  margin: 0 auto 56px;
+}
+section { padding: 96px 0; }
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ââ FADE IN ââ */
+.fade-up {
+  opacity: 0; transform: translateY(32px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ââ NAV ââ */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  transition: background .3s, border-color .3s;
+  border-bottom: 1px solid transparent;
+}
+#nav.scrolled {
+  background: rgba(3,7,18,.88);
+  backdrop-filter: blur(16px);
+  border-color: var(--border);
+}
+.nav-inner {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.nav-logo {
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -.02em;
+}
+.nav-logo span { color: var(--cyan); }
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 14px; font-weight: 500; color: var(--muted);
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  display: flex; gap: 12px;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all .2s; border: none;
+}
+.btn-primary {
+  background: var(--grad); color: #fff;
+}
+.btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-outline:hover { border-color: var(--blue-l); color: var(--text); }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: 10px; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--text); transition: .3s; }
+
+/* ââ HERO ââ */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  padding: 120px 0 80px;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,.22), transparent),
+              radial-gradient(ellipse 50% 40% at 80% 60%, rgba(6,182,212,.12), transparent);
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-content { position: relative; z-index: 1; text-align: center; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(6,182,212,.1); border: 1px solid rgba(6,182,212,.25);
+  color: var(--cyan-l); font-size: 13px; font-weight: 600;
+  padding: 6px 16px; border-radius: 99px; margin-bottom: 32px;
+}
+.hero-badge .dot { width: 6px; height: 6px; background: var(--cyan); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+.hero-title {
+  font-size: clamp(40px, 6vw, 76px);
+  font-weight: 900; line-height: 1.08;
+  letter-spacing: -.03em; margin-bottom: 24px;
+}
+.hero-sub {
+  font-size: clamp(17px, 2.2vw, 21px);
+  color: var(--muted); max-width: 620px;
+  margin: 0 auto 40px; line-height: 1.6;
+}
+.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero-stats {
+  display: flex; justify-content: center; gap: 48px;
+  flex-wrap: wrap; margin-top: 72px;
+  padding-top: 48px;
+  border-top: 1px solid var(--border);
+}
+.stat-item { text-align: center; }
+.stat-num {
+  font-size: 36px; font-weight: 800;
+  letter-spacing: -.02em; line-height: 1;
+}
+.stat-label { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+/* ââ PIPELINE PREVIEW ââ */
+#pipeline-preview {
+  padding: 0 0 80px;
+}
+.pipeline-steps {
+  display: flex; align-items: center;
+  gap: 0; overflow-x: auto;
+  padding: 32px 40px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.pipeline-step {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  flex: 1; min-width: 120px; text-align: center;
+  position: relative;
+}
+.pipeline-step:not(:last-child)::after {
+  content: '';
+  position: absolute; right: -1px; top: 20px;
+  width: 2px; height: 2px;
+}
+.step-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  background: rgba(37,99,235,.15); border: 1px solid rgba(37,99,235,.25);
+}
+.step-num { font-size: 10px; color: var(--faint); font-weight: 600; letter-spacing: .06em; }
+.step-label { font-size: 13px; font-weight: 600; }
+.step-arrow {
+  font-size: 20px; color: var(--faint);
+  flex-shrink: 0; padding: 0 8px;
+  margin-top: -16px;
+}
+
+/* ââ PROBLEM ââ */
+#problem { background: var(--bg); }
+.problem-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin-bottom: 48px;
+}
+.pain-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+  transition: border-color .2s;
+}
+.pain-card:hover { border-color: rgba(239,68,68,.3); }
+.pain-stat {
+  font-size: 40px; font-weight: 900;
+  letter-spacing: -.03em; color: #f87171;
+  line-height: 1; margin-bottom: 8px;
+}
+.pain-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.pain-card p  { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.options-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.option-card {
+  padding: 24px; border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.option-card.bad  { background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.15); }
+.option-card.ok   { background: rgba(245,158,11,.05); border-color: rgba(245,158,11,.15); }
+.option-card.good { background: rgba(37,99,235,.08);  border-color: rgba(37,99,235,.25); }
+.option-card .icon { font-size: 28px; margin-bottom: 12px; }
+.option-card h4   { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.option-card p    { font-size: 13px; color: var(--muted); }
+.option-card .verdict {
+  font-size: 12px; font-weight: 700;
+  margin-top: 12px; letter-spacing: .04em;
+}
+.option-card.bad .verdict  { color: #f87171; }
+.option-card.ok .verdict   { color: #fbbf24; }
+.option-card.good .verdict { color: var(--cyan); }
+
+/* ââ SOLUTION ââ */
+#solution { background: var(--bg2); }
+.solution-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 48px; align-items: center;
+}
+.feature-list { display: flex; flex-direction: column; gap: 20px; }
+.feature-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 20px; border-radius: var(--radius);
+  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+  transition: border-color .2s;
+}
+.feature-item:hover { border-color: rgba(6,182,212,.3); }
+.feature-icon {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; background: var(--bg3);
+}
+.feature-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.feature-item p  { font-size: 13px; color: var(--muted); }
+.solution-visual {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 32px;
+}
+.timeline-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding-bottom: 28px; position: relative;
+}
+.timeline-item:not(:last-child)::before {
+  content: ''; position: absolute;
+  left: 20px; top: 44px; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.timeline-dot {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.timeline-dot.active {
+  background: var(--blue); border-color: var(--blue-l);
+  box-shadow: 0 0 20px rgba(37,99,235,.4);
+}
+.timeline-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.timeline-item p  { font-size: 13px; color: var(--muted); }
+
+/* ââ HOW IT WORKS ââ */
+#how { background: var(--bg); }
+.how-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; border-radius: var(--radius-lg); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.how-card {
+  background: var(--bg2); padding: 32px 28px;
+  position: relative; overflow: hidden;
+  transition: background .2s;
+}
+.how-card:hover { background: var(--bg3); }
+.how-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--grad); opacity: 0;
+  transition: opacity .2s;
+}
+.how-card:hover::before { opacity: 1; }
+.how-num {
+  font-size: 56px; font-weight: 900;
+  color: rgba(255,255,255,.04); line-height: 1;
+  position: absolute; right: 16px; top: 8px;
+  letter-spacing: -.04em;
+}
+.how-icon { font-size: 28px; margin-bottom: 12px; }
+.how-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.how-card p  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.how-auto { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+.auto-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 4px;
+}
+.auto-badge.auto { background: rgba(16,185,129,.15); color: #34d399; }
+.auto-badge.manual { background: rgba(245,158,11,.15); color: #fbbf24; }
+
+/* ââ FEASIBILITY ââ */
+#feasibility { background: var(--bg2); }
+.feasibility-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.feas-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+}
+.feas-card h3 {
+  font-size: 16px; font-weight: 700;
+  margin: 12px 0 8px; display: flex; gap: 8px; align-items: center;
+}
+.feas-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.check-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.check-list li {
+  display: flex; gap: 8px; align-items: flex-start;
+  font-size: 13px; list-style: none;
+}
+.check-list li::before { content: 'â'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+/* ââ MARKET ââ */
+#market { background: var(--bg); }
+.market-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 16px; margin-bottom: 48px;
+}
+.market-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px; text-align: center;
+}
+.market-num {
+  font-size: 38px; font-weight: 900; line-height: 1;
+  margin-bottom: 6px; letter-spacing: -.02em;
+}
+.market-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.market-card p  { font-size: 13px; color: var(--muted); }
+.expansion-row {
+  display: flex; align-items: center; gap: 0;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.exp-step {
+  flex: 1; padding: 20px 24px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.exp-step:last-child { border-right: none; }
+.exp-step h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.exp-step p  { font-size: 12px; color: var(--muted); }
+
+/* ââ TRACTION ââ */
+#traction { background: var(--bg2); }
+.traction-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px; margin-bottom: 40px;
+}
+.traction-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+}
+.traction-card .num {
+  font-size: 32px; font-weight: 900; line-height: 1;
+  margin-bottom: 6px;
+}
+.traction-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.traction-card p  { font-size: 13px; color: var(--muted); }
+.founding-banner {
+  background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(6,182,212,.08));
+  border: 1px solid rgba(37,99,235,.25);
+  border-radius: var(--radius); padding: 32px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+}
+.founding-banner h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.founding-banner p  { font-size: 14px; color: var(--muted); max-width: 460px; }
+
+/* ââ BUSINESS MODEL ââ */
+#business { background: var(--bg); }
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 16px; margin-bottom: 48px;
+}
+.price-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+  transition: border-color .2s, transform .2s;
+  position: relative;
+}
+.price-card:hover { transform: translateY(-4px); }
+.price-card.featured {
+  border-color: var(--blue); background: rgba(37,99,235,.06);
+}
+.popular-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--grad); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 14px; border-radius: 99px;
+}
+.price-name { font-size: 14px; font-weight: 700; color: var(--muted); margin-bottom: 12px; }
+.price-val {
+  font-size: 36px; font-weight: 900; line-height: 1;
+  letter-spacing: -.02em; margin-bottom: 4px;
+}
+.price-period { font-size: 13px; color: var(--faint); margin-bottom: 20px; }
+.price-features { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.price-features li {
+  display: flex; gap: 8px; font-size: 13px; align-items: flex-start;
+}
+.price-features li::before { content: 'â'; color: var(--green); flex-shrink: 0; font-weight: 700; }
+.unit-econ {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 16px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px;
+}
+.econ-item { text-align: center; }
+.econ-item .num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.econ-item .label { font-size: 13px; color: var(--muted); }
+
+/* ââ GTM ââ */
+#gtm { background: var(--bg2); }
+.gtm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.gtm-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+}
+.gtm-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.gtm-step {
+  display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
+}
+.gtm-step-num {
+  width: 24px; height: 24px; flex-shrink: 0;
+  background: var(--blue); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.gtm-step p { font-size: 13px; color: var(--muted); }
+.gtm-step strong { color: var(--text); font-weight: 600; }
+
+/* ââ COMPETITION ââ */
+#competition { background: var(--bg); }
+.comp-table {
+  width: 100%; border-collapse: collapse;
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.comp-table th, .comp-table td {
+  padding: 14px 20px; font-size: 13px; text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.comp-table thead th {
+  background: var(--bg3); font-weight: 700; font-size: 14px;
+}
+.comp-table thead th:first-child { text-align: left; }
+.comp-table td:first-child { text-align: left; font-weight: 600; }
+.comp-table tbody tr:nth-child(even) { background: var(--bg2); }
+.comp-table tbody tr:last-child td { border-bottom: none; }
+.comp-table .fc-col { background: rgba(37,99,235,.08); }
+.comp-table .fc-col th { color: var(--cyan); }
+.yes { color: var(--green); font-size: 16px; }
+.no  { color: var(--red);   font-size: 16px; }
+.partial { color: var(--yellow); font-size: 16px; }
+
+/* ââ MOAT ââ */
+#moat { background: var(--bg2); }
+.moat-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+}
+.moat-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  transition: border-color .2s;
+}
+.moat-card:hover { border-color: rgba(139,92,246,.35); }
+.moat-icon { font-size: 28px; margin-bottom: 12px; }
+.moat-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.moat-card p  { font-size: 13px; color: var(--muted); }
+
+/* ââ ROADMAP ââ */
+#roadmap { background: var(--bg); }
+.roadmap-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 0;
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.roadmap-phase {
+  padding: 28px; border-right: 1px solid var(--border);
+  position: relative;
+}
+.roadmap-phase:last-child { border-right: none; }
+.roadmap-phase.active {
+  background: rgba(37,99,235,.06);
+  border-top: 2px solid var(--blue);
+}
+.phase-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+}
+.phase-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.phase-timeline { font-size: 12px; color: var(--cyan); margin-bottom: 16px; font-weight: 600; }
+.phase-milestones { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.phase-milestones li {
+  font-size: 12px; color: var(--muted);
+  display: flex; gap: 6px;
+}
+.phase-milestones li::before { content: 'â'; color: var(--faint); flex-shrink: 0; }
+
+/* ââ TEAM ââ */
+#team { background: var(--bg2); }
+.team-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; align-items: start; }
+.team-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 36px;
+}
+.team-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--grad); display: flex; align-items: center;
+  justify-content: center; font-size: 28px; font-weight: 800;
+  margin-bottom: 20px; color: #fff;
+}
+.team-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.team-title { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+.team-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.skill-tag {
+  font-size: 12px; font-weight: 600;
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 6px; color: var(--muted);
+}
+.team-bio { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.hiring-list { display: flex; flex-direction: column; gap: 16px; }
+.hire-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.hire-card .role-icon { font-size: 24px; }
+.hire-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.hire-card p  { font-size: 13px; color: var(--muted); }
+
+/* ââ RISKS ââ */
+#risks { background: var(--bg); }
+.risks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.risk-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; cursor: pointer;
+}
+.risk-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.risk-header h3 { font-size: 15px; font-weight: 700; flex: 1; }
+.risk-body { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.risk-mitigation {
+  margin-top: 12px; padding: 12px;
+  background: rgba(16,185,129,.05); border: 1px solid rgba(16,185,129,.15);
+  border-radius: 8px; font-size: 12px; color: #34d399;
+}
+.risk-mitigation strong { display: block; margin-bottom: 4px; font-weight: 700; }
+
+/* ââ VISION ââ */
+#vision {
+  background: var(--bg2);
+  text-align: center;
+}
+.vision-headline {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -.03em; max-width: 900px; margin: 0 auto 24px;
+}
+.vision-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+  margin: 56px 0;
+}
+.vision-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; text-align: left;
+}
+.vision-card .icon { font-size: 24px; margin-bottom: 10px; }
+.vision-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.vision-card p  { font-size: 13px; color: var(--muted); }
+.why-box {
+  background: linear-gradient(135deg, rgba(37,99,235,.1), rgba(6,182,212,.06));
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--radius-lg); padding: 48px;
+  max-width: 780px; margin: 0 auto;
+}
+.why-box blockquote {
+  font-size: clamp(18px, 2.5vw, 22px);
+  font-weight: 600; line-height: 1.55;
+  color: var(--text); margin-bottom: 16px;
+}
+.why-box cite { font-size: 13px; color: var(--muted); font-style: normal; }
+
+/* ââ INVEST / CTA ââ */
+#invest { background: var(--bg); padding: 96px 0; }
+.invest-inner {
+  background: linear-gradient(135deg, rgba(37,99,235,.1), rgba(6,182,212,.06));
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--radius-lg); padding: 72px 48px;
+  text-align: center;
+}
+.invest-title {
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 900; letter-spacing: -.02em; margin-bottom: 16px;
+}
+.invest-sub { font-size: 17px; color: var(--muted); max-width: 520px; margin: 0 auto 40px; }
+.invest-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+.invest-info {
+  display: flex; gap: 48px; justify-content: center; flex-wrap: wrap;
+  padding-top: 32px; border-top: 1px solid var(--border);
+}
+.invest-info-item { text-align: center; }
+.invest-info-item .num { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.invest-info-item .label { font-size: 12px; color: var(--muted); }
+
+/* ââ FOOTER ââ */
+footer {
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding: 40px 0;
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+.footer-logo { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+.footer-logo span { color: var(--cyan); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 13px; color: var(--faint); transition: color .2s;}
+.footer-links a:hover { color: var(--muted); }
+.footer-copy { font-size: 12px; color: var(--faint); }
+
+/* ââ MOBILE ââ */
+@media (max-width: 900px) {
+  .nav-links, .nav-cta { display: none; }
+  .hamburger { display: flex; }
+  .problem-grid, .solution-grid, .feasibility-grid,
+  .gtm-grid, .team-layout, .risks-grid { grid-template-columns: 1fr; }
+  .how-grid, .moat-grid { grid-template-columns: 1fr 1fr; }
+  .market-grid, .traction-grid, .pricing-grid,
+  .roadmap-grid, .vision-grid { grid-template-columns: 1fr 1fr; }
+  .options-row, .unit-econ { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .how-grid, .moat-grid, .market-grid, .traction-grid,
+  .pricing-grid, .roadmap-grid, .vision-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 28px; }
+  .pipeline-steps { padding: 20px; }
+  .invest-inner { padding: 40px 24px; }
+}
+/* Mobile nav drawer */
+.mobile-nav {
+  display: none; position: fixed;
+  inset: 64px 0 0; z-index: 99;
+  background: rgba(3,7,18,.97); backdrop-filter: blur(16px);
+  padding: 32px 24px; flex-direction: column; gap: 24px;
+}
+.mobile-nav.open { display: flex; }
+.mobile-nav a {
+  font-size: 20px; font-weight: 600; color: var(--muted);
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- ââââââââââââââââââââââââ NAV ââââââââââââââââââââââââ -->
+<nav id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo">Forge<span>Craft</span></a>
+    <ul class="nav-links">
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#solution">Solution</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#market">Market</a></li>
+      <li><a href="#business">Business</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="#invest">Investors</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#invest" class="btn btn-outline">Investor Info</a>
+      <a href="platform.html" class="btn btn-primary">Try ForgeCraft â</a>
+    </div>
+    <div class="hamburger" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobileNav">
+  <a href="#problem" onclick="closeMobileNav()">Problem</a>
+  <a href="#solution" onclick="closeMobileNav()">Solution</a>
+  <a href="#how" onclick="closeMobileNav()">How It Works</a>
+  <a href="#market" onclick="closeMobileNav()">Market</a>
+  <a href="#business" onclick="closeMobileNav()">Business</a>
+  <a href="about.html" onclick="closeMobileNav()">About</a>
+  <a href="#invest" onclick="closeMobileNav()">Investors</a>
+  <a href="platform.html" class="btn btn-primary" style="text-align:center" onclick="closeMobileNav()">Try ForgeCraft â</a>
+</div>
+
+<!-- ââââââââââââââââââââââââ HERO ââââââââââââââââââââââââ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Now accepting founding users â first product free
+    </div>
+    <h1 class="hero-title">
+      AI Builds Any Product<br>
+      <span class="grad-text">You Can Imagine</span>
+    </h1>
+    <p class="hero-sub">
+      Describe your problem. ForgeCraft designs, builds, tests, and delivers
+      custom software â fully automated. No engineers. No compromises. No waiting months.
+    </p>
+    <div class="hero-actions">
+      <a href="platform.html" class="btn btn-primary btn-lg">Try ForgeCraft â</a>
+      <a href="#how" class="btn btn-outline btn-lg">See How It Works</a>
+      <a href="#invest" class="btn btn-outline btn-lg">Investor Information</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num grad-text" data-target="10">0</div>
+        <div class="stat-label">Min avg build time</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">100%</div>
+        <div class="stat-label">Automated pipeline</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">$0</div>
+        <div class="stat-label">Engineering expertise needed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">6</div>
+        <div class="stat-label">Step autonomous process</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">80%+</div>
+        <div class="stat-label">Gross margin target</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pipeline Preview Strip -->
+<div id="pipeline-preview">
+  <div class="container">
+    <div class="pipeline-steps">
+      <div class="pipeline-step">
+        <div class="step-icon">ð¬</div>
+        <div class="step-num">STEP 01</div>
+        <div class="step-label">Describe</div>
+      </div>
+      <div class="step-arrow">â</div>
+      <div class="pipeline-step">
+        <div class="step-icon">âï¸</div>
+        <div class="step-num">STEP 02</div>
+        <div class="step-label">Design</div>
+      </div>
+      <div class="step-arrow">â</div>
+      <div class="pipeline-step">
+        <div class="step-icon">â¡</div>
+        <div class="step-num">STEP 03</div>
+        <div class="step-label">Build</div>
+      </div>
+      <div class="step-arrow">â</div>
+      <div class="pipeline-step">
+        <div class="step-icon">â</div>
+        <div class="step-num">STEP 04</div>
+        <div class="step-label">Verify</div>
+      </div>
+      <div class="step-arrow">â</div>
+      <div class="pipeline-step">
+        <div class="step-icon">ð§ª</div>
+        <div class="step-num">STEP 05</div>
+        <div class="step-label">Test</div>
+      </div>
+      <div class="step-arrow">â</div>
+      <div class="pipeline-step">
+        <div class="step-icon">ð¦</div>
+        <div class="step-num">STEP 06</div>
+        <div class="step-label">Deliver</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ââââââââââââââââââââââââ PROBLEM ââââââââââââââââââââââââ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-label"><span class="tag red">The Problem</span></div>
+    <h2 class="section-title">Custom Software Is<br>Out of Reach for 99% of the World</h2>
+    <p class="section-sub">
+      Every business has unique needs. But accessing custom software means choosing between
+      bad options â not a real solution.
+    </p>
+
+    <div class="problem-grid fade-up">
+      <div class="pain-card">
+        <div class="pain-stat">$150K</div>
+        <h3>Average cost of custom software development</h3>
+        <p>A typical agency project runs $50Kâ$500K. For small businesses and individuals, that's simply not accessible. The price wall shuts out the vast majority of potential software buyers before they even start.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-stat">9 months</div>
+        <h3>Average time from brief to delivery</h3>
+        <p>Custom software takes 6â18 months from initial requirements to working product. By the time it ships, the business problem has often changed â meaning the product is already partially obsolete.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-stat">300M+</div>
+        <h3>Small businesses with no technical team</h3>
+        <p>Over 300 million small businesses globally operate without a single engineer on staff. These businesses face recurring operational pain that off-the-shelf SaaS cannot solve â and they cannot hire their way out of it.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-stat">83%</div>
+        <h3>Of SMBs report using tools that don't fully fit their needs</h3>
+        <p>In our market research across 12 SMB owners, 83% said they currently use software that forces them to adapt their workflow to the tool, rather than the reverse. The compromise costs them hours of manual work every week.</p>
+      </div>
+    </div>
+
+    <div class="options-row fade-up">
+      <div class="option-card bad">
+        <div class="icon">ð¢</div>
+        <h4>Hire a Dev Agency</h4>
+        <p>You get exactly what you want â eventually. $50Kâ$500K upfront, 6â18 month wait, high chance of scope creep, and zero code ownership transparency.</p>
+        <div class="verdict">â Too expensive. Too slow. Too risky.</div>
+      </div>
+      <div class="option-card ok">
+        <div class="icon">ð¦</div>
+        <h4>Use Off-the-Shelf SaaS</h4>
+        <p>Fast and cheap â but you spend months adapting your processes to what the tool can do. You pay for features you don't need and miss the ones you do. Every workaround costs time.</p>
+        <div class="verdict">â  Fast, but you always compromise.</div>
+      </div>
+      <div class="option-card good">
+        <div class="icon">â¡</div>
+        <h4>ForgeCraft</h4>
+        <p>Describe what you need in plain language. ForgeCraft builds it, tests it, and delivers it â completely customized to your exact requirements. No compromises. No wait.</p>
+        <div class="verdict">â Custom. Fast. Affordable. Yours.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ââââââââââââââââââââââââ SOLUTION ââââââââââââââââââââââââ -->
+<section id="solution">
+  <div class="container">
+    <div class="section-label"><span class="tag">The Solution</span></div>
+    <h2 class="section-title">One Platform. Any Product.<br><span class="grad-text">Built Perfectly for You.</span></h2>
+    <p class="section-sub">
+      ForgeCraft is the first end-to-end autonomous product platform. Every step from problem
+      description to delivered software is handled by AI â no human engineers involved.
+    </p>
+
+    <div class="solution-grid fade-up">
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">ð¯</div>
+          <div>
+            <h4>Built Exactly for You â No Compromises</h4>
+            <p>Every product is designed from scratch around your specific requirements. There is no template, no pre-built module, and no "that feature isn't supported." If you can describe it, we can build it.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">ð¤</div>
+          <div>
+            <h4>100% Automated Pipeline</h4>
+            <p>From the moment you approve your design, the entire process is autonomous. Code generation, dependency management, testing, deployment â bo human engineers in the loop.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">ð¬</div>
+          <div>
+            <h4>Verified Against Your Requirements</h4>
+            <p>Before delivery, every requirement you stated is programmatically verified against the built product. If anything is missing, the system automatically redesigns and rebuilds until it passes.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">â¡</div>
+          <div>
+            <h4>Minutes, Not Months</h4>
+            <p>Simple tools are delivered in 10â30 minutes. Complex applications in 2â4 hours. Compare that to 9 months and $150K for the same product through a traditional agency.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="solution-visual fade-up">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:20px;">Your experience â start to finish</div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">1</div>
+          <div>
+            <h4>Describe your problem</h4>
+            <p>Talk to our AI in plain language. No technical knowledge needed. Just explain what you need and why.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">2</div>
+          <div>
+            <h4>Review & refine the design</h4>
+            <p>See a preview of your product. Change anything. Add requirements. The AI asks smart questions to fill in the gaps you didn't know were there.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">3</div>
+          <div>
+            <h4>Approve and let it build</h4>
+            <p>Hit approve. The pipeline takes over: architecture, code generation, testing, deployment. You watch progress in real time.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">4</div>
+          <div>
+            <h4>Receive your working product</h4>
+            <p>Get a live URL, full source code on GitHub, auto-generated documentation, and a walkthrough. Use it immediately.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:var(--green);color:var(--green)">â</div>
+          <div>
+            <h4>Backed by our guarantee</h4>
+            <p>If your product doesn't meet every stated requirement, we rebuild it automatically. Full refund if we can't deliver.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ââââââââââââââââââââââââ HOW IT WORKS ââââââââââââââââââââââââ -->
+<section id="how">
+  <div class="container">
+    <div class="section-label"><span class="tag">Under the Hood</span></div>
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Six autonomous systems working in sequence â with feedback loops that guarantee the output meets your requirements.</p>
+
+    <div class="how-grid fade-up">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-icon">ð¬</div>
+        <h3>Product Discovery Engine</h3>
+        <p>An AI conducts a structured intake conversation with you â surfacing both explicit requirements (what you say you want) and implicit requirements (what you clearly need but didn't mention). It produces a formal Product Requirements Document (PRD) only when you approve the design.</p>
+        <div class=how-auto">
+          <span class="auto-badge manual">User Input</span>
+          <span class="auto-badge auto">AI-Assisted</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class=how-num">02</div>
+        <div class="how-icon">ðï¸</div>
+        <h3>Design Generation Engine</h3>
+        <p>Takes your approved PRD and produces a complete technical design: system architecture, data models, API contracts, and component breakdown. This is the blueprint every subsequent system builds from. You never see this â it runs entirely behind the scenes.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <div class="how-icon">â¡</div>
+        <h3>Autonomous Build Pipeline</h3>
+        <p>Generates all code, configurations, and infrastructure in isolated Docker containers. Builds component by component. When a component fails to compile or run, the AI diagnoses the error, rewrites it, and retries â automatically. All code is version-controlled on GitHub.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">04</div>
+        <div class="how-icon">â</div>
+        <h3>Requirements Verification Engine</h3>
+        <p>After the build, every requirement in your PRD is programmatically checked. "User can log in with email and password" becomes an automated test. If any requirement is unmet, a gap report is generated and the build pipeline re-runs for the missing pieces. Nothing moves forward until all requirements pass.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">05</div>
+        <div class="how-icon">ð§ª</div>
+        <h3>Automated Testing Suite</h3>
+        <p>The product is tested across five dimensions: unit tests (every function), integration tests (component communication), end-to-end browser tests (real user flows via Playwright), performance tests (load handling), and security scans (OWASP Top 10, known CVEs). Any failure triggers an auto-fix loop.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">06</div>
+        <div class="how-icon">ð¦</div>
+        <h3>Packaging & Delivery</h3>
+        <p>Your product is deployed to a live URL on your own subdomain. Source code is pushed to a GitHub repo you own. Documentation and a guided onboarding walkthrough are auto-generated from your PRD and codebase. You receive everything within hours of approving your design.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px 32px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;" class="fade-up">
+      <div style="flex:1;min-width:240px;">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px;">MVP SCOPE â PHASE 1 (SOFTWARE)</div>
+        <div style="font-size:15px;font-weight:600;">What's included:</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px;">CRUD web apps Â· Data dashboards Â· Automation scripts Â· REST APIs Â· Form-based tools</div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px;">PHASE 2 â FUTURE ROADMAP</div>
+        <div style="font-size:15px;font-weight:600;">Coming later:</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px;">Physical hardware Â· PCBs &amp; wearables Â· Mobile apps Â· Real-time systems Â· ML model training</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ââââââââââââââââââââââââ FEASIBILITY ââââââââââââââââââââââââ -->
+<section id="feasibility">
+  <div class="container">
+    <div class="section-label"><span class="tag yellow">Feasibility</span></div>
+    <h2 class="section-title">Can This Actually Be Built Today?</h2>
+    <p class="section-sub">Yes â and no new technical breakthroughs are required. Every component of ForgeCraft is built on mature, production-ready technology available today.</p>
+
+    <div class="feasibility-grid fade-up">
+      <div class="feas-card">
+        <div style="font-size:28px;">ð¬</div>
+        <h3><span style="color:var(--green)">â</span> No Breakthroughs Required</h3>
+        <p>ForgeCraft is built entirely on existing technology. LLMs can generate production-quality code for well-scoped software. Docker sandboxing is mature. Playwright, pytest, and automated testing frameworks are industry standard. The innovation is the pipeline architecture â not any single component.</p>
+        <ul class="check-list">
+          <li>LLM code generation: GPT-4 / Claude API â production ready</li>
+          <li>Sandboxed execution: Docker â battle-tested</li>
+          <li>Automated testing: pytest + Playwright â industry standard</li>
+          <li>CI/CD + deployment: Vercel / GitHub Actions â widely used</li>
+        </ul>
+      </div>
+      <div class="feas-card">
+        <div style="font-size:28px;">â ï¸</div>
+        <h3><span style="color:var(--yellow)">â</span> Hardest Engineering Challenges</h3>
+        <p>We're not pretending this is trivial. Three specific challenges require serious engineering investment:</p>
+        <ul class="check-list" style="margin-top:8px;">
+          <li><strong>Scope ambiguity</strong> â customers describe needs imprecisely. Addressed by deep investment in the discovery conversation UI and implicit requirement inference.</li>
+          <li><strong>LLM reliability</strong> â models produce plausible-but-broken code. Addressed by the self-correction loop with configurable retry limits and test-gated progression.</li>
+          <li><strong>Sandboxed execution at scale</strong> â running arbitrary generated code safely. Addressed by containerized environments with no network access and strict resource limits.</li>
+        </ul>
+      </div>
+      <div class="feas-card">
+        <div style="font-size:28px;">ð</div>
+        <h3><span style="color:var(--blue-l)">â</span> Quality Control &amp; Failure Handling</h3>
+        <p>When something goes wrong, ForgeCraft handles it autonomously:</p>
+        <ul class="check-list" style="margin-top:8px;">
+          <li>Build failures â AI diagnoses, rewrites component, retries</li>
+          <li>Test failures â targeted fix loop, re-runs full suite on pass</li>
+          <li>Requirements gaps â gap report fed back to build pipeline</li>
+          <li>Infinite loop guard â escalates to design reassessment after N retries</li>
+          <li>Customer-reported issues â auto-triage, redesign within SLA</li>
+          <li>Unresolvable failures â full refund, no questions asked</li>
+        </ul>
+      </div>
+      <div class="feas-card">
+        <div style="font-size:28px;">ð­</div>
+        <h3><span style="color:var(--purple)">â</span> Level of Autonomy Today vs. Future</h3>
+        <p>We're honest about what the AI can and cannot do at each phase:</p>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span>Phase 1: Software products</span><span style="color:var(--green);font-weight:700;">~9% automated</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
+              <div style="width:95%;height:100%;background:var(--green);border-radius:3px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span>Phase 2: Physical hardware (future)</span><span style="color:var(--yellow);font-weight:700;">~70% automated</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
+              <div style="width:70%;height:100%;background:var(--yellow);border-radius:3vx;"></div>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:12px;">Phase 1 manufacturing: N/A (software delivery is digital). Phase 2 manufacturing: handled via API integrations with fabrication partners (JLCPCB, Xometry, Shapeways).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ââââââââââââââââââââââââ MARKET ââââââââââââââââââââââââ -->
+<section id="market">
+  <div class="container">
+    <div class="section-label"><span class="tag green">Market Opportunity</span></div>
+    <h2 class="section-title">A Market That's Been Waiting<br><span class="grad-text">For This to Be Possible</span></h2>
+    <p class="section-sub">The custom software market is enormous, growing, and fundamentally underserved. ForgeCraft is entering at the exact moment AI makes this approach viable.</p>
+
+    <div class="market-grid fade-up">
+      <div class="market-card">
+        <div class="market-num grad-text">$650B</div>
+        <h4>Global Software Development Market</h4>
+        <p>Total addressable market for custom software development and delivery services, growing at 15% YoY.</p>
+      </div>
+      <div class="market-card">
+        <div class="market-num" style="color:var(--cyan)">$180B</div>
+        <h4>SMB SoftwareÛÛÈÙYÛY[Ú
+TËX\ÙYÓPÈÚ]x $ÍL[\ÞYY\ÈÜ[[ÈÛÜ\][Û[ÛÙØ\HÛÛÈ8 %Ý\[]X[\Ù]X\Ù]ÜÙ]]Û\ÜÏHX\Ù]XØ\]Û\ÜÏHX\Ù][[HÝ[OHÛÛÜ\KYÜY[HÙ]
+Ù\XÙXXHØZ[XHX\Ù]
+LÊOÚ
+ÛÛÙ\]]HË^YX\\Ù]Ø\\[ÈIHÙÝ\Ù\XÙXXHY\ÜØXHX\Ù]Ú]ÝÛÈ[]XÛÛÛZXÜËÜÙ]Ù]]Û\ÜÏH^[Ú[Û\ÝÈYK]\]Û\ÜÏH^\Ý\
+¼'ã«ÈYX\H8 %[]X[XXÚXYÚ
+TÈÓPÈ
+x $ÍL[\ÞYY\ÊHYY[È[\[ÛÛËÜÈX[YÙ\ËÝ[\ËY[[Ù\ÈÚÈØ[ÝYÜH][Ü\ÜÙ]]Û\ÜÏH^\Ý\
+¼'äâYX\8 %X\Ù]^[Ú[ÛÚ
+[\\ÙH[\[ÛÛ[Ë\\Y[[\Ë[ÛØ[ÓPËÛÙ\ÛÛXÝËYÚ\PÕÓHY\ËÜÙ]]Û\ÜÏH^\Ý\
+¼'å*HYX\ÊÈ8 %\Ø\H^[Ú[ÛÚ
+\ÚXØ[\Ø\HÙXÝÈ8 %[XÝÛXÜËÙX\X\ËYXÚ[XØ[ÛÛ\Û[ËØ[YH\[[KY\[Ý]]ÜÙ]]Û\ÜÏH^\Ý\
+¼'ã#HÛÈ\H8 %ÛØ[]ÜOÚ
+[HÙXÝ[H\ÛÛ[]Ú\KH]ÜH][[Ý\ÈH\Y\]ÙY[[XYÚ[][Û[[]\KÜÙ]Ù]]Ý[OHX\Ú[]ÜÌØXÚÙÜÝ[\KXÌNØÜ\\ÛÛYØJÍËNKÍKNØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÌÈÛ\ÜÏHYK]\]Ý[OHÛ\Ú^NLÜÙÛ]ÙZYÚÌØÛÛÜ\KXÞX[NÝ^][ÙÜN\\Ø\ÙNÛ]\\ÜXÚ[Î
+[NÛX\Ú[XÝÛNÈÚH\ÛÝ\ÈY[ÛHÝXØÙ\ÜÙ[HYÜOÏÙ]Ý[OHÛ\Ú^NMØÛÛÜ\K[]]Y
+NÛ[KZZYÚKÎÈH[ÝÙ\\ÈÚ[\NÝÛÈÝ[OHÛÛÜ\K]^
+HHXÚÛÙÞHØ\ÛÝÛÛÙ[ÝYÚ[[ø $ÌÜÝÛÏ\ÈYYYÈXXÚH\ÚÛÚ\H^HÛÝ[ÙXÙHÙXÝ[Û\]X[]KÛÛ^X[KXÛÜXÝÛÙHXÜÜÜÈ[\H\XØ][ÛÈ8 %Ý\ÝÛ\]Ë]\ÚÛØ\ÈÛHÜÜÜÙYÚ]ÔM[Û]YKÜÙPÜY\ÈZ[ÈZ[]^XÝHHYÚ[ÛY[[\Ý[[Ý\Y[YÙH[H]]ÛÛ[Ý\È[]\H\[[H\ÈÚYÛYXØ[ÜÙ]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dPÕSÓ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYHXÝ[Û]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈY[ÝÈXÝ[ÛÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÚ\HÙH\HÙ^OÚÛ\ÜÏHÙXÝ[Û\ÝXÙIÜHX\H8 %[Û\ÝXÝ]]\IÜÈ^XÝHÚ\HÙHÝ[[Ú]ÙIÜHZ[[ÈÝØ\Ü]Û\ÜÏHXÝ[ÛYÜYYK]\]Û\ÜÏHXÝ[ÛXØ\]Û\ÜÏH[HÝ[OHÛÛÜ\KXÞX[H\ÙHOÙ]
+XÝ]H][ÜY[Ú
+U\[[H[\XÝ]H][ÜY[\ØÛÝ\H[Ú[H
+Ý\JH\È[Z[\Ù][È\Ý[]ËY[Z[HLÜÙ]]Û\ÜÏHXÝ[ÛXØ\]Û\ÜÏH[HÝ[OHÛÛÜ\KYÜY[HLÙ]
+ÓPÝÛ\[\Y]ÜÏÚ
+ÛÛXÝYX\Ù][Y][ÛÚ]LÛX[\Ú[\ÜÈÝÛ\ÈXÜÜÜÈÈ[\ÝY\ËÉH^\ÜÙYÝÛÈ[\\Ý[HÛÜÚ[ÈÛÛ][ÛÜÙ]]Û\ÜÏHXÝ[ÛXØ\]Û\ÜÏH[HÝ[OHÛÛÜ\KXYK[
+HÉOÙ]
+Ú[[Û\ÜÈÈ^H	L
+ËÛ[ÛÚ
+ÙÜÙH[\Y]ÙY
+ÉHØZY^HÛÝ[^H	LÛ[ÛÜ[ÜHÜH]ÜH][XXHZ[È[XZ[Z[ÈÝ\ÝÛH[\[ÛÛËÜÙ]Ù]]Ý[OHXÚÙÜÝ[\KXÌNØÜ\\ÛÛY\KXÜ\NØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÌÛX\Ú[XÝÛNÈÛ\ÜÏHYK]\]Ý[OHÛ\Ú^NMÙÛ]ÙZYÚÌÛX\Ú[XÝÛNMÈÚ]Ý\\ÙX\Ú\XÚ\[ÈØZYÙ]]Ý[OH\Ü^NÜYÙÜY][\]KXÛÛ[[ÎYYÙØ\MÈ]Ý[OHXÚÙÜÝ[\KXÌÊNØÜ\\Y]\ÎLÜY[ÎØÜ\[YÜÛÛY\KXÞX[NÈÝ[OHÛ\Ú^NMØÛÛÜ\K[]]Y
+NÙÛ\Ý[N][XÎÛ[KZZYÚKNÈIÝHY[^Z[È	
+ÞYX\ÜHÔH]ÛHÙ\È
+	HÙÚ]HYYH\Ý]HÚ]HÛÜØ\Ý[ËÜ]Ý[OHÛ\Ú^NLØÛÛÜ\KYZ[
+NÛX\Ú[]ÜLÈ¸ %ÝÛ\Ý]\]YHÙÚ\ÝXÜÈÛÛ\[KL[\ÞYY\ÏÙ]Ù]]Ý[OHXÚÙÜÝ[\KXÌÊNØÜ\\Y]\ÎLÜY[ÎØÜ\[YÜÛÛY\KXYK[
+NÈÝ[OHÛ\Ú^NMØÛÛÜ\K[]]Y
+NÙÛ\Ý[N][XÎÛ[KZZYÚKNÈHÛÝH][ÝHÜ	
+KÈZ[H\ÚXÈ[[ÜHXÚÙ\H\ÙHÜXYÚY]È[ÝXY]	ÜÈHYÚX\KÜ]Ý[OHÛ\Ú^NLØÛÛÜ\KYZ[
+NÛX\Ú[]ÜLÈ¸ %Ý[\KXÛÛ[Y\ÙH\Ú[\ÜË[\ÞYY\ÏÙ]Ù]Ù]Ù]]Û\ÜÏHÝ[[ËX[\YK]\]ÏÚ[HÝ[[È\Ù\ÛÚÜÚÏÙIÜHÙ[XÝ[ÈLÝ[[È\Ù\ÈÈXÙZ]HZ\\ÝÙXÝZ[ÛÛ\][HYH8 %[^Ú[ÙHÜYYXÚÈ[\Z\ÜÚ[ÛÈÚ\HHØ\ÙHÝYKÚ\HH]ÜHYÜH]][Ú\ËÜÙ]HYHXZ[Î\XZ[Ú]PÛXZ[ÛÛOÜÝXXÝQÜÙPÜYÝ[[È\Ù\\XØ][ÛÛ\ÜÏH\[X\H[È\HÝÈ8¡¤ØOÙ]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dTÒSTÔÈSÑS8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYH\Ú[\ÜÈ]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈ\Ú[\ÜÈ[Ù[ÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÚ[\HXÚ[ËÝÛÈXÛÛÛZXÜËÜ[Û\ÜÏHÜY]^ØØ[\ÈÚ]Ý][X[ËÜÜ[ÚÛ\ÜÏHÙXÝ[Û\ÝX]\HÙXÝZ[HÜÙPÜY\È	JÈÜÜÜÈX\Ú[XØ]\ÙHRHZ[È]8 %Ý[[Ú[Y\[ÈX[KÜ]Û\ÜÏHXÚ[ËYÜYYK]\]Û\ÜÏHXÙKXØ\]Û\ÜÏHXÙK[[YHÝ\\Ù]]Û\ÜÏHXÙK][NOÙ]]Û\ÜÏHXÙK\\[Ù\ÙXÝÙ][Û\ÜÏHXÙKYX]\\ÈOHÝ\ÝÛHÛÙØ\HÙXÝÛOOÜÝYÜL[ÛÏÛOO[ÛÝ\ÙHÛÙHÛÚ]XÛOO]]ËYÙ[\]YØÝ[Y[][ÛÛOO\ÚXÈÝ\ÜÛOÝ[Ù]]Û\ÜÏHXÙKXØ\X]\Y]Û\ÜÏHÜ[\XYÙH[ÜÝÜ[\Ù]]Û\ÜÏHXÙK[[YHÏÙ]]Û\ÜÏHXÙK][NOÜ[Ý[OHÛ\Ú^NMÙÛ]ÙZYÚØÛÛÜ\K[]]Y
+HÛ[ÏÜÜ[Ù]]Û\ÜÏHXÙK\\[ÙÝXØÜ\[ÛÙ][Û\ÜÏHXÙKYX]\\ÈO\ÈÈÙXÝËÛ[ÛÛOO[Ü]HZ[]Y]YOÛOO[Z][HÜÝ[È
+È\[YHÓOÛOOÙXÝ\]\È	[\ÈY\ÚYÛÏÛOO[XZ[Ý\ÜÛOÝ[Ù]]Û\ÜÏHXÙKXØ\]Û\ÜÏHXÙK[[YH\Ú[\ÜÏÙ]]Û\ÜÏHXÙK][
+NOÜ[Ý[OHÛ\Ú^NMÙÛ]ÙZYÚØÛÛÜ\K[]]Y
+HÛ[ÏÜÜ[Ù]]Û\ÜÏHXÙK\\[ÙÝXØÜ\[ÛÙ][Û\ÜÏHXÙKYX]\\ÈO[[Z]YÙXÝÏÛOOX[HXØÙ\ÜÈ
+
+HÙX]ÊOÛOO[YÜ][ÛÈ
+ÈTHXØÙ\ÜÏÛOOYXØ]YÝ\ÜÛOONKIH\[YHÓOÛOÝ[Ù]]Û\ÜÏHXÙKXØ\]Û\ÜÏHXÙK[[YH[\\ÙOÙ]]Û\ÜÏHXÙK][Ý\ÝÛOÙ]]Û\ÜÏHXÙK\\[Ù\ÚXÝÙ][Û\ÜÏHXÙKYX]\\ÈOÛÛ\^\ÙK\ØØ[HÙXÝÏÛOOÚ]K[X[Ü[ÛÛOOÛ\[H\Þ[Y[ÛOOÝ\ÝÛHÓOÛOOYXØ]YXØÛÝ[X[YÙ\ÛOÝ[Ù]Ù]]Û\ÜÏH[]YXÛÛYK]\]Û\ÜÏHXÛÛZ][H]Û\ÜÏH[HÝ[OHÛÛÜ\KYÜY[H8 $ÌOÙ]]Û\ÜÏHX[]ÈRHTHÛÜÝ\ÙXÝZ[Ù]Ù]]Û\ÜÏHXÛÛZ][H]Û\ÜÏH[HÝ[OHÛÛÜ\KXÞX[H8 $Î
+IOÙ]]Û\ÜÏHX[\Ù]ÜÜÜÈX\Ú[
+\ÙHJOÙ]Ù]]Û\ÜÏHXÛÛZ][H]Û\ÜÏH[HÝ[OHÛÛÜ\KXYK[
+HL	JÏÙ]]Û\ÜÏHX[ÚXÝYX\Ú[\ÈÜY]\H[Ù[È\XÙH\\\HHÛÜÝÏÙ]Ù]Ù]]Ý[OHX\Ú[]ÜØXÚÙÜÝ[\KXÌNØÜ\\ÛÛY\KXÜ\NØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÌÈÛ\ÜÏHYK]\Ý[OHÛ\Ú^NMØÛÛÜ\K[]]Y
+NÛ[KZZYÚKÎÈÝÛÈÝ[OHÛÛÜ\K]^
+HØØ[X[]NÜÝÛÏÜÙPÜY\È[HØØ[XH8 %HX\Ú[[ÛÜÝÙZ[[ÈÛH[ÜHÙXÝ\ÈX\^\È
+RHTHØ[
+ÈÛÛ\]JK[ZÙHÛÙØ\HYÙ[ÚY\È]]\Ý\H[ÜH[Ú[Y\ÈÈ[]\[ÜHÚXÝËÜÙPÜY	ÜÈØ\XÚ]HØØ[\ÈÜ^Û[HÚ][\ÝXÝ\KÝXYÛÝ[\ÈÛ[YHÜÝÜËÙH[\Ý[ÜY]\H[K][Y[Ù[È]YXÙH\\\HH\[[ÞH[\ÚX\Ú[ÈXÝHL	KÜÙ]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÕH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYHÝH]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈÛËUËSX\Ù]ÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÝÈÙHÙ]ÈLL[K\Ù\ÏÚÛ\ÜÏHÙXÝ[Û\ÝXH[X\]K\ÙY\ØXÚ8 %Ý\[ÈÚ]\XÝ[Y][Û[ØØ[[ÈÝYÚÛÛ[][]KÛÛ[[ÙXÝ[YÜÝÝÜ]Û\ÜÏHÝKYÜYYK]\]Û\ÜÏHÝKXØ\Ï¼'ã«È\ÝL\Ù\È8 %\XÝ[Y][ÛÚÏ]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HOÙ]ÝÛÏÝ[[ÈÛÚÜÜÝÛÏ8 %LÓPÝÛ\ÈÛHÝ\\ÙX\Ú]ÛÜÈÚÈ[XYHÛ\È^HYY\ËYHÙXÝZ[[^Ú[ÙHÜ]Z[YYYXÚÈ[HØ\ÙHÝYKÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÙ]ÝÛÏ\ÛÛ[Ý]XXÚÜÝÛÏ8 %\XÝ[XZ[ÈÈ
+LÛX[\Ú[\ÜÈÝÛ\È[Ý\]ÛÜËÈYËÈÛÛYXË\ÝHÝ[Ø[H[HÛÜÚ[È[[ËÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÏÙ]ÝÛÏZ[[XXÏÜÝÛÏ8 %ØÝ[Y[]\HZ[Û[[ÙY[ÚÝÈÚ]H]ÜHXÝX[HÙXÙ\ËHÝ]]\ÈHÛÙÜÙ]Ù]]Û\ÜÏHÝKXØ\Ï¼'æ \ÝK\Ù\È8 %]\YÙH	[\ÈØØ[OÚÏ]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HOÙ]ÝÛÏÙXÝ[	[\ÈXÚÙ\]ÜÏÜÝÛÏ8 %][ÚÚ]L[Y]YØ\ÙHÝYY\È[H]H[[Ë\Ù]HZ[\
+ÈÝ[\ÛÛ[][]HÚÈY[\ÈZ[\ØÙ\[KÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÙ]ÝÛÏËXÛÙHÛÛ[][]H\\Ú\ÏÜÝÛÏ8 %XKÙXÝË[XZÙHÛÛ[][]Y\ÈÛÛZ[[YÈÙÝ\Ø[ÈÙ\Ù\ÈÚÈ\H[XYHZ[ÈÈÛÛH\È^XÝØ[KÙ\ÜÙPÜY\ÈHÚ]È\ÙHÚ[ËXÛÙH\ÛÝ[ÝYÚÜ[ÛÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÏÙ]ÝÛÏZ[Ú]ÜÙPÜYYÙOÜÝÛÏ8 %]\H[]\YÙXÝØ\Y\ÈHÛX[YÙKXXÚ\Þ[Y[\ÈH]HYÈHÙXÝ	ÜÈ\Ù\Ë\[H\ÚYÛÜÙ]Ù]]Û\ÜÏHÝKXØ\Ï¼'å$Z[[È\ÝÚ]\Ù\ÏÚÏ]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HOÙ]ÝÛÏYXØ[[Ü\[ÞOÜÝÛÏ8 %]HZ[ÙÜ\ÜÈ\ÚØ\ÚÝÜÈ]\HÝ\ÙH\[[K\Ù\ÈØ]ÚZ\ÙXÝZ[ÈZ[[X[[YKÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÙ]ÝÛÏ\Ý\Ý[È\ÚXHÈ\Ù\ÜÝÛÏ8 %]\H[]\YÙXÝ[ÛY\ÈH[\Ý\Ý[È\Ü[]\ÝÈ\ÜÈ]KLH\ÝÛÝ\YÙKÙXÝ\]HØØ[\Ý[È8 %[\ÚXKÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÏÙ]ÝÛÏ[Û^KXXÚÈÝX\[YOÜÝÛÏ8 %YH[]\YÙXÝÙ\ÛÝYY]]\HÝ]Y\]Z\[Y[ÙHXZ[]YKYÙHØ[Ý\ÛÛH][Y[\È\ÚÈÜHÝ\ÝÛY\ÜÙ]Ù]]Û\ÜÏHÝKXØ\Ï¼'äèÈÚ[[È	[\È\[]OÚÏ]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HOÙ]ÝÛÏÑSÈÛÛ[ÜÝÛÏ8 %ÝÈÈZ[HÜÜXÚYXÈÛÛHÚ]Ý]ÛÙ[È\Ù]ÈYÚZ[[]Y\Y\ËXXÚ\XÛH[ÈÚ]H]HÜÙPÜY[[ÈÜ]^XÝ\ÙHØ\ÙKÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÙ]ÝÛÏØ\ÙHÝYH[Ú[OÜÝÛÏ8 %]\HÝ[[È\Ù\Z[XÛÛY\ÈHX\ÚYØ\ÙHÝYNØ[H8¡¤ÙXÝ8¡¤Ý]ÛÛYKX[ÛÙÝX\Ù][ÈÛÜKÜÙ]]Û\ÜÏHÝK\Ý\]Û\ÜÏHÝK\Ý\[[HÏÙ]ÝÛÏÚH]ÜXYÏÜÝÛÏ8 %Ú[HÛX[\Ú[\ÜÈ\Ù\ÈHÝ\ÝÛKXZ[ÛÛ]\XÝH]ÈZ\YYË^H[Ý\ÛX[\Ú[\ÜÙ\ËHÙXÝÛÛ\ÈH[]\Ø[Z[[[Ý\[H[ÛÛYØ[KÛÜ[Ù[[Ý]\ÈH[X\HÚ[[ÜÙ]Ù]Ù]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÓÓTUUSÓ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYHÛÛ\]][Û]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈYÛÛ\]][ÛÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÚHÜÙPÜYÚ[ÏÚÛ\ÜÏHÙXÝ[Û\ÝXÈ\XÝÛÛ\]]ÜÝÛÈH[]ËY[]]ÛÛ[Ý\È[]\H\[[KHX\\Ý[\]]\È\HZ]\ÛÛÈÜ][Ü\ÈÜ\X[ÛÛ][ÛÈÚ]XZÜØ\ËÜ]Û\ÜÏHYK]\Ý[OHÝ\ÝË^]]ÎÈXHÛ\ÜÏHÛÛ\]XHXYØ\X[]OÝÛ\ÜÏHËXÛÛÝ[OHÛÛÜ\KXÞX[NÈÜÙPÜYÝ]YÙ[ÞOÝ\]YÙ[ÝXKÕÙXÝÏÝÚ]XÛÜ[ÝÝÝÝXYÙOÈÛÙ[ÈÛÝÛYÙH\]Z\YÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏH\X[ÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÝ[HÝ\ÝÛHÈ[Ý\\]Z\[Y[ÏÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏH\X[ÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏH\X[ÜÜ[ÝÝ[]ËY[]]ÛX]Y\[[OÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏH\X[ÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÝ\]Z\[Y[È\YXØ][Û[Ú[OÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏH\X[ÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÝ]]ÛX]Y\Ý[ÈÝZ]OÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏH\X[ÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÝ[]\Y[	ÈH^OÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏH\X[ÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÝYÜXHÜÓPÈ
+	É
+L
+OÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÝÙ[XÛÜXÝ[Û
+ÈY\ÚYÛÛÜÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÝ\ÚXØ[\Ø\H
+ØYX\
+OÝÛ\ÜÏHËXÛÛÜ[Û\ÜÏHY\È¸§$ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÜ[Û\ÜÏHÈ¸§%ÏÜÜ[ÝÝÝÙOÝXOÙ]]Ý[OHX\Ú[]ÜØXÚÙÜÝ[\KXÌNØÜ\\ÛÛYØJLÎKL
+NØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÌÈÛ\ÜÏHYK]\]Ý[OHÛ\Ú^NLÜÙÛ]ÙZYÚÌØÛÛÜØMÎNÝ^][ÙÜN\\Ø\ÙNÛ]\\ÜXÚ[Î
+[NÛX\Ú[XÝÛNÈÚ]ÝÜÈHYÈÛÛ\[HÛHÛÜZ[È\ÏÏÙ]Ý[OHÛ\Ú^NMØÛÛÜ\K[]]Y
+NÛ[KZZYÚKÎÈXXÚ[]YX[ÛÛ\Û[ÙÜÙPÜY
+Ú]ÝÛÙHÙ[\Ý[ÊHØ[H\XØ]YHH\ÙHÛÛ\]]ÜÚ]^HØ[ÝX\Ú[H\XØ]H\ÈHÝÛÈÝ[OHÛÛÜ\K]^
+H[YÜ]YÞ\Ý[H\ÈHÚÛOÜÝÛÏ8 %ÜXÚYXØ[HHÜY]\H\]Z\[Y[[XÚ]][Û\[[H[H]]ÛÛ[Ý\È\YXØ][ÛÛÜ]Ý\ÈHÙXÝYY]È\]Z\[Y[Ë\ÙH\HZ[ÛHZ[[ÛÈÙ\]Z\[Y[8¡¤ÙXÝ8¡¤Ý]ÛÛYH]HÚ[È]ÛÛ\Ý[Ý\[YKH]H[Ø]ÜÝÜÈÚ]]\HZ[H\ÙHÛÛ\]]ÜÝ\[ÈÛHØÜ]ÚXÙ\ÈHÚYÛYXØ[]H\ØY[YÙH]ÚY[ÈÚ]]\HÙXÝÜÙPÜYÚ\ËÜÙ]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dSÐU8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYH[Ø]]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈ\HY[ÚX[]OÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÚ]Ù]ÈÝÛÙ\\ÈÙHÜÝÏÚÛ\ÜÏHÙXÝ[Û\ÝXÜÙPÜY	ÜÈÛÛ\]]]HY[YÙ\ÈÛÛ\Ý[Ú]ØØ[H8 %XXÚÙXÝZ[XZÙ\ÈH^ÛH]\Ü]Û\ÜÏH[Ø]YÜYYK]\]Û\ÜÏH[Ø]XØ\]Û\ÜÏH[Ø]ZXÛÛ¼'éèÙ]Ï]H[Ø]ÚÏ]\HÙXÝZ[Ù[\]\ÈH[\]YH]\Ù]ÝÈHÝ\ÝÛY\\ØÜXYHØ[KÚ]HRH[\YÝÈHÞ\Ý[HZ[][Ú]\]Ø]\ÙYY\]Z\[Y[Ë\ÈÜY]\H\]Z\[Y[8¡¤ÙXÝ8¡¤Ý]ÛÛYH]\Ù]\ÈÝ\XØXHÚ]Ý][[ÈHØ[YH\[[H]ØØ[K]Z[È]\[Ù[ËÚXÚÚ\]\ÙXÝËÚXÚÙ[\]H[ÜH]KÜÙ]]Û\ÜÏH[Ø]XØ\]Û\ÜÏH[Ø]ZXÛÛ¼'å%ÏÙ]Ï\[[HTÚÏH\]Z\[Y[[XÚ]][Û
+È]]ÛÛ[Ý\È\YXØ][ÛÛÜ\ÈÜÙPÜY	ÜÈÛÜHXÚXØ[[Ý][Û]	ÜÈHÛÛ\Û[ÈÛÛ\]]Ü\ÈZ[[HÛH]XZÙ\È]]ÛÛ[Ý\È[]\H[XXH]\[XÚÛ\ÜËHÝ\Ú[Û[][\XØ][ÛÛÝ\È\È\Ú]XÝ\K\Ý[[Ý\Y[YÙHX]\È\KÜÙ]]Û\ÜÏH[Ø]XØ\]Û\ÜÏH[Ø]ZXÛÛ¼'ã$Ù]Ï]ÛÜÈYXÝÏÚÏ]\HÝXØÙ\ÜÙ[ÙXÝ[]\Y\ÈHØ\ÙHÝYKØ\ÙHÝYY\ÈZ[\Ý\Ý[ÜÈ[ÜH\Ù\Ë[ÜH\Ù\ÈÙ[\]H[ÜHZ[]K[ÜH]H[\Ý\ÈH[Ù[Ë[\ÝY[Ù[È[]\]\ÙXÝËXXÚ[È[\ÈÚZ[Z[ÜÙ\ÈH^8 %HÛ\ÜÚXÈ]ÚY[]XØÙ[\]\ÈÝ\[YKÜÙ]]Û\ÜÏH[Ø]XØ\]Û\ÜÏH[Ø]ZXÛÛ¼'ãëOÙ]ÏX[YXÝ\[È\\Ú\È
+\ÙHOÚÏ\ÈÜÙPÜY^[È[È\ÚXØ[\Ø\K^Û\Ú]HÜY\Y]Y\\\Ú\ÈÚ]XXØ][ÛÙ\XÙ\È
+ÐX[YXÝ\\ËÑ[[È]ÛÜÜËXÚ\Ú[ÛXXÚ[[È\\ÊHÜX]HÝ\HÚZ[Y[YÙ\È[]Z[XHÈ]È[[ËÛ[YHXÚ[È[YXØ]YØ\XÚ]HXÛÛYHY[ÚXH\ÜÙ]ËÜÙ]]Û\ÜÏH[Ø]XØ\]Û\ÜÏH[Ø]ZXÛÛ¸£ì{î#ÏÙ]ÏÚHÙHÚ[[
+x $ÌLYX\ÏÚÏH\[[HÙ]È[X]XØ[H]\Ý\[YKÜY]\H[Ù[È[K][YÛÝ\Z[]\Ù]Ú[Ý]\ÜHÙ[\[\\ÜÙH\ÈÜÝ\\ÙHØ\ÙKH]HØ\]ÙY[ÜÙPÜY[[H]È[[ÜÝÜÈÚ]]\HÙXÝÚ\YHÝÚ]Ú[ÈÛÜÝÜÝ\ÝÛY\ÈÚÈ]HZ\[\HÙXÝÜÛ[È[ÜÙPÜY\ÈYÚÜÙ]]Û\ÜÏH[Ø]XØ\]Û\ÜÏH[Ø]ZXÛÛ¼'ã«Ù]Ï\ÝS[Ý\[Z[ÏÚÏHÚ[ÝÈÈ\ÝX\ÚH]H[Ø][]]ÛÛ[Ý\ÈÙXÝ[]\H\ÈÜ[YÚÝË\ÈXØ[YHØ\XH[ÝYÚ[ËH\ÝÛÛ\[HÈZ[H\ÙH]\Ù]Ù\]Z\[Y[8¡¤\YYY\ÙXÝX\[ÜÈÚ[]HHÚYÛYXØ[[\XHY[YÙHÝ\[[ÛHÚÈY\ÈÈ[\\ÈX\Ù]¸ $ÌÈYX\È]\ÜÙ]Ù]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÐQPT8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYHØYX\]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈ^XÝ][ÛÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÚ]ÙIÜHZ[[È[Ú[ÚÛ\ÜÏHÙXÝ[Û\ÝXHØÝ\ÙYX[\ÝXÈØYX\Ú]ÛX\Z[\ÝÛ\È[YX\Ý\XHÝXØÙ\ÜÈÜ]\XH]XXÚÝYÙKÜ]Û\ÜÏHØYX\YÜYYK]\]Û\ÜÏHØYX\\\ÙHXÝ]H]Û\ÜÏH\ÙK]YÈÝÈ8 %LÙ]]Û\ÜÏH\ÙK]]HU][ÚÙ]]Û\ÜÏH\ÙK][Y[[HÜ[HÙ
+[ÙÜ\ÜÏÙ][Û\ÜÏH\ÙK[Z[\ÝÛ\ÈO\ØÛÝ\H[Ú[H
+ÛÛ\Ø][Û[[ZÙJOÛOO]]ÛÛ[Ý\ÈZ[\[[H
+
+HÙXÝ\\ÊOÛOO\]Z\[Y[È\YXØ][Û[Ú[OÛOO]]ÛX]Y\Ý[ÈÝZ]OÛOO[]\NÚ]X
+ÈÜÝYTÛOOLÝ[[È\Ù\Z[ÈÛÛ\]YÛOÝ[Ù]]Û\ÜÏHØYX\\\ÙH]Û\ÜÏH\ÙK]YÈLÈÙ]]Û\ÜÏH\ÙK]]HX\H][YOÙ]]Û\ÜÏH\ÙK][Y[[HÜÝSUÙ][Û\ÜÏH\ÙK[Z[\ÝÛ\ÈOÈÝXØÜ\[ÛY\]OÛOOLÙXÝÈÚ\YÛOOXXÈÙXÝ[][ÚÛOO\Ý	LÈTÛOO^[ÈMHÙXÝ\\ÏÛOOÝ\ÝÛY\\ÚØ\OÛOÝ[Ù]]Û\ÜÏHØYX\\\ÙH]Û\ÜÏH\ÙK]YÈMÙ]]Û\ÜÏH\ÙK]]HØØ[H	[\È\[Ù]]Û\ÜÏH\ÙK][Y[[HÙYY[YÙ][Û\ÜÏH\ÙK[Z[\ÝÛ\ÈO[\\ÙH[Ý
+ÈXØÛÝ[ÊOÛOOL
+ÈÙXÝÈÚ\YÛOOÜY]\H[Ù[[K][[ÈYÚ[ÏÛOO\Ø\H[\ÑX[HÜYYÛOOÙ\Y\ÈH\\][ÛÛOO
+LÈT\Ù]ÛOÝ[Ù]]Û\ÜÏHØYX\\\ÙH]Û\ÜÏH\ÙK]YÈÏÙ]]Û\ÜÏH\ÙK]]H\Ø\H\ÙOÙ]]Û\ÜÏH\ÙK][Y[[HÙ\Y\ÈOÙ][Û\ÜÏH\ÙK[Z[\ÝÛ\ÈO\ÚXØ[\Ø\H\[[HOÛOOÐ
+È[ÛÜÝ\HÙXÝÈ]OÛOOX[YXÝ\[È\\[YÜ][ÛÏÛOO[\][Û[^[Ú[Û
+UJOÛOOL
+ÈÝ[ÙXÝÈÚ\YÛOOØ]YÛÜKYY[[È[\ÝX\ÚYÛOÝ[Ù]Ù]]Ý[OHX\Ú[]ÜÙ\Ü^NÜYÙÜY][\]KXÛÛ[[ÎYYYÙØ\MÈÛ\ÜÏHYK]\]Ý[OHXÚÙÜÝ[\KXÌNØÜ\\ÛÛY\KXÜ\NØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÝ^X[YÛÙ[\È]Ý[OHÛ\Ú^NÙÛ]ÙZYÚØÛÛÜ\KXÞX[NÛX\Ú[XÝÛNÈ	JÏÙ]]Ý[OHÛ\Ú^NLØÛÛÜ\K[]]Y
+NÈ\[[HÝXØÙ\ÜÈ]H
+U\Ù]
+OÙ]Ù]]Ý[OHXÚÙÜÝ[\KXÌNØÜ\\ÛÛY\KXÜ\NØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÝ^X[YÛÙ[\È]Ý[OHÛ\Ú^NÙÛ]ÙZYÚØÛÛÜ\KYÜY[NÛX\Ú[XÝÛNÈKÍOÙ]]Ý[OHÛ\Ú^NLØÛÛÜ\K[]]Y
+NÈ\Ù\Ø]\ÙXÝ[Û\Ù]
+Ý[[ÈÛÚÜ
+OÙ]Ù]]Ý[OHXÚÙÜÝ[\KXÌNØÜ\\ÛÛY\KXÜ\NØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÝ^X[YÛÙ[\È]Ý[OHÛ\Ú^NÙÛ]ÙZYÚØÛÛÜ\KXYK[
+NÛX\Ú[XÝÛNÈ[ÛOÙ]]Ý[OHÛ\Ú^NLØÛÛÜ\K[]]Y
+NÈ\Ù]Ü\Ý	LÈTÙ]Ù]Ù]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dPSH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYHX[H]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈÜY[X[OÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÚHÙIÜHHYÚX[OÚÛ\ÜÏHÙXÝ[Û\ÝXHÝ[\Ú]H\HÛÛX[][ÛÙ\Ø\KÛÙØ\KRK[ÙXÝ\Ú\[È^\Y[ÙH8 %]^XÝHHYÚ[ÛY[ÈZ[\ËÜ]Û\ÜÏHX[K[^[Ý]YK]\]Û\ÜÏHX[KXØ\]Û\ÜÏHX[KX]]\RÙ]]Û\ÜÏHX[K[[YH\XH[Ú]OÙ]]Û\ÜÏHX[K]]HÝ[\	[\ÈÑSÈ0­ÈÜÙPÜYÙ]]Û\ÜÏHX[K\ÚÚ[ÈÜ[Û\ÜÏHÚÚ[]YÈØÝXÜÈ[Ú[Y\[ÏÜÜ[Ü[Û\ÜÏHÚÚ[]YÈ]ÛÈÈÈXXÝÜÜ[Ü[Û\ÜÏHÚÚ[]YÈ\Ø\HÝÝ\[ÏÜÜ[Ü[Û\ÜÏHÚÚ[]YÈRHÞ\Ý[\ÏÜÜ[Ü[Û\ÜÏHÚÚ[]YÈ\ÚÈÈ\ÝTOÜÜ[Ü[Û\ÜÏHÚÚ[]YÈÙ[ÛÜ\Ú[ÛÜÜ[Ü[Û\ÜÏHÚÚ[]YÈX[HXY\Ú\ÜÜ[Ü[Û\ÜÏHÚÚ[]YÈÙXÝ][ÜY[ÜÜ[Ù]Û\ÜÏHX[KX[ÈØÝXÜÈ[Ú[Y\[ÈÝY[]PÈØ[HÜ^Ú]Y\[Ë[Û^\Y[ÙHÚ\[ÈX[ÙXÝÈ8 %Ý\ÝÝÝ\\ËÛËYÝ[\[ÛË\\ÚY[Ù[[PÝË[[Ú[Y\[ÈÜØ[^][ÛØÝ\ÙYÛZ[[È\ÜÚ\Ý]HXÚÛÙÞKÚ\HH\ÈÚ\Y\Ø\KÜÛÙØ\HÙXÝÈ[ÛY[ÈÙX\XHØY]H]XÙ\È[]YØ][ÛÞ\Ý[\Ë\XIÜÈXÚÙÜÝ[Ü[ÈÝÚY\ÈÙHÜÙPÜY\]X][ÛH[\Ý[ÈÛÙØ\HÞ\Ý[\È\Ú]XÝ\HY\H[ÝYÚÈ\ÚYÛHZ[\[[K[[\Ý[È\Ø\HX[YXÝ\[ÈY\H[ÝYÚÈÚ\H\ÙHØYX\H\ÈY[Ú[Y\[ÈX[\ËX[YÙY\Ø\K\ÛÙØ\H[YÜ][Û[Ú\YÙXÝÈÛHÛÛÙ\È\Ù\[ËIÜÈZ[[ÈÜÙPÜYXØ]\ÙHH\È]YHØ[H8 %Z[ÈÈZ[Ý\ÝÛHÛÛÈÚ]HÛX[X[K[Z]Y[YK[ÛÛÝZ[Y\ÛÝ\Ù\ËÜÙ]]]Ý[OHÛ\Ú^NMÙÛ]ÙZYÚÌØÛÛÜ\K[]]Y
+NÝ^][ÙÜN\\Ø\ÙNÛ]\\ÜXÚ[Î
+[NÛX\Ú[XÝÛNÈÙIÜH\[ÏÙ]]Û\ÜÏH\[Ë[\Ý]Û\ÜÏH\KXØ\]Û\ÜÏHÛKZXÛÛ¸¦¨OÙ]]
+RHÈXÚÙ[\[[H[Ú[Y\Ú
+Y\]ÛHTH^\Y[ÙKØÚÙ\ØÛÛZ[\^][Û\Þ[ÈØ]Y]Y\È
+Ù[\KÐ[
+K[ÝIÛÝÛHZ[\[[H8 %H[ÜÝXÚXØ[HÚ[[Ú[È[YÚ\Ý[]\YÙHÛÛ\Û[ÜÙ]Ù]]Û\ÜÏH\KXØ\]Û\ÜÏHÛKZXÛÛ¼'ãªÙ]]
+Û[[Ú[Y\ÈVÚ
+XXÝÈ^ËÝÛÈV[Ý[ÝË^\Y[ÙHZ[[ÈÛÛ\Ø][Û[ÜX[][YH[\XÙ\Ë[ÝIÛÝÛHÝ\ÝÛY\YXÚ[È\ØÛÝ\H^\Y[ÙH8 %HÙXÝ	ÜÈ[ÜÝ[\Ü[\Ý[\\ÜÚ[ÛÜÙ]Ù]]Û\ÜÏH\KXØ\]Û\ÜÏHÛKZXÛÛ¼'äèÏÙ]]
+XYÙÜÝÝ
+]\OÚ
+ÜÜÝ\ÙYY\[Ë^\Y[ÙHÚ]ØXTÈÕKÛÛ[][]K[YÜÝÝ[][Ü\ÜÓP]YY[Ù\ËÚ[ÈY\U[Y][ÛÜÙ]Ù]]Ý[OHXÚÙÜÝ[ØJÍËNKÍK
+NØÜ\\\ÚYØJÍËNKÍKÊNØÜ\\Y]\Î\K\Y]\ÊNÜY[ÎÛX\Ú[]ÜÈÝ[OHÛ\Ú^NLÜØÛÛÜ\K[]]Y
+NÈ[\\ÝY[Ú[[ÈX\OÈHYHXZ[Î\XZ[Ú]PÛXZ[ÛÛOÜÝXXÝQÜÙPÜYX[H[]Z\HÝ[OHÛÛÜ\KXYK[
+NÙÛ]ÙZYÚÈXXÚÝ]\XÝH8¡¤ØOÜÙ]Ù]Ù]Ù]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dTÒÔÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYH\ÚÜÈ]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈY\ÚÜÏÜÜ[Ù]Û\ÜÏHÙXÝ[Û]]HÙHÛÝÙÙHH\]Y\Ý[ÛÏÚÛ\ÜÏHÙXÝ[Û\ÝX]\HÙ\[Ý\È[\ÝÜÚ[\ÚÈ\ÙK\H\HÝ\Û\Ý[ÝÙ\ËÜ]Û\ÜÏH\ÚÜËYÜYYK]\]Û\ÜÏH\ÚËXØ\]Û\ÜÏH\ÚËZXY\Ü[Ý[OHÛ\Ú^NÈ¼'é%ÜÜ[ÏH[XÚ[][ÛÈÜX]HÚÙ[ÙXÝÈ]ØØ[OÚÏÜ[Û\ÜÏHYÈYYÚ[\XÝÜÜ[Ù]Û\ÜÏH\ÚËXÙHYHRHÙ[\]\È]\ÚXKX]XÚÙ[ÛÙKÝ\ÝÛY\ÈXÙZ]HÛY[Ý[Û[ÙXÝË]ØØ[K\ÈÛÝ[\ÝÞH\Ý[H]ÜH[\[KÜ]Û\ÜÏH\ÚË[Z]YØ][ÛÝÛÏZ]YØ][ÛÜÝÛÏÙ[XÛÜXÝ[ÛÛÜØ]Ú\ÈÛÛ\[KÜ[[YH\ÜÈYÜH[]\K\]Z\[Y[È\YXØ][Û[Ú[HÚXÚÜÈ]\HÝ]Y\]Z\[Y[]]ÛX]Y\ÝÝZ]H
+[][YÜ][ÛLJH]\Ý\ÜÈL	HYÜH[]\KÙXÝÈ]Z[[[YYX][Û][\ÈXÙZ]HH[Y[\ÈÝ\Z[]\Ù]ÜÝÜËÙH[K][H[Ù[ÈÜXÚYXØ[HÜÝ\\ÙHØ\ÙKYXÚ[È[XÚ[][Û]\ÈÝ\[YKÙ]Ù]]Û\ÜÏH\ÚËXØ\]Û\ÜÏH\ÚËZXY\Ü[Ý[OHÛ\Ú^NÈ¸§dÏÜÜ[Ï\Ù\ÈØ[Ý\XÝ[]HÚ]^HØ[ÚÏÜ[Û\ÜÏHYÈY[ÝÈYY][H[\XÝÜÜ[Ù]Û\ÜÏH\ÚËXÙHH]ÜH\ÜÝ[Y\ÈÝ\ÝÛY\ÈØ[\ØÜXHZ\Ø[HÛX\H[ÝYÚÜHRHÈÜX[^K[XÝXÙK\]Z\[Y[È\HÙ[[XYÝ[Ý\ËÛÛYXÝÜKÜ\ØÛÝ\YZYXZ[Ü]Û\ÜÏH\ÚË[Z]YØ][ÛÝÛÏZ]YØ][ÛÜÝÛÏH\ØÛÝ\H[Ú[H\È\ÚYÛYÜXÚYXØ[HÜ[XYÝ[Ý\ËÛ]XÚXØ[[]Ë]XÝ][HÝ\XÙ\È[\XÚ]\]Z\[Y[ÈÝYÚ\Ù]YÛÝË]\]Y\Ý[ÛËÝ\ÝÛY\È\ÝHHÜX[YÜH[HÛÙH\ÈÜ][ÜÝY[]\HY\ÚYÛÈ\H[ÛYY[ÝXØÜ\[ÛY\ËÙH[\ÝH[ÜÝ[Ú[Y\[È[YH[H[ZÙHV8 %]	ÜÈHYÚ\Ý[]\YÙHÛÛ\Û[Ù]Ù]]Û\ÜÏH\ÚËXØ\]Û\ÜÏH\ÚËZXY\Ü[Ý[OHÛ\Ú^NÈ¼'ä¬ÜÜ[ÏRHTHÛÜÝÈÜZÙH[\ÝÞHX\Ú[ÏÚÏÜ[Û\ÜÏHYÈY[ÝÈYY][H[\XÝÜÜ[Ù]Û\ÜÏH\ÚËXÙH\\\HHXÚ[È\ÈÝ]ÚYHÝ\ÛÛÛHÚYÛYXØ[ÛÜÝ[ÜX\ÙHÛHÜ[RHÜ[ÜXÈÛÝ[ÛÛ\\ÜÈX\Ú[È[ÝÈXX[]HYÜHÙIÝHZ[ÜY]\H[Ù[ËÜ]Û\ÜÏH\ÚË[Z]YØ][ÛÝÛÏZ]YØ][ÛÜÝÛÏÙH\ÙH][\HHÝY\ÈÚ]]]ÛX]XÈ[XÚÈ
+ÈÚ[ÛK][Ü\[[ÞJK\ÈÙHØØ[KÛ[YH\ØÛÝ[ÈYXÙH\XØ[ÛÜÝËÙYY[[È[ÛY\ÈHYXØ]Y[ØØ][ÛÜÜY]\H[Ù[[K][[ËÚXÚ[[Ý\È\\\H\[[ÞH]ØØ[KÝ\\Ù]\ÈL	JÈÜÜÜÈX\Ú[Ú]ÜY]\H[Ù[ËÙ]Ù]]Û\ÜÏH\ÚËXØ\]Û\ÜÏH\ÚËZXY\Ü[Ý[OHÛ\Ú^NÈ¼'ãåûî#ÏÜÜ[ÏÛÛ\^ÙXÝÈ^ÙYYRHØ\X[]OÚÏÜ[Û\ÜÏHYÈY[ÝÈYY][H[\XÝÜÜ[Ù]Û\ÜÏH\ÚËXÙH\Ù\ÈX^H\]Y\ÝÙXÝÈ]\HÛÈÛÛ\^ÜÝ\[\ÈÈ[XXHZ[8 %X[][YHÞ\Ý[\ËY\HÝ\ÝÛH[ÛÜ]\ËÜ[YÜ][ÛÈÚ]ØØÝ\H\\\HT\ËÜ]Û\ÜÏH\ÚË[Z]YØ][ÛÝÛÏZ]YØ][ÛÜÝÛÏ\ÙHHU\È^XÚ]HØÛÜYÈÙXÝØ]YÛÜY\ÈÚ][Ý\[HØ\X[]H
+ÔQ\Ë\ÚØ\Ë]]ÛX][ÛØÜ\ËTÕT\ÊKÝ][Ù\ØÛÜH\]Y\ÝÈ\HÛX\HÛÛ[][XØ]YYÜH[HZ[Ý\Ë\ÈRH[\Ý\ËÝ\ÜYÙXÝ\\È^[H]ÜH\È\ÚYÛYÈÜÝÈ]ÈØ\X[]H[ÙHÚ][Ù[[\Ý[Y[ÈÝ\[YKÙ]Ù]]Û\ÜÏH\ÚËXØ\]Û\ÜÏH\ÚËZXY\Ü[Ý[OHÛ\Ú^NÈ¼'å$ÜÜ[Ï\Ù\ÈÛÝ\ÝRKPZ[ÛÙØ\OÚÏÜ[Û\ÜÏHYÈY[ÝÈYY][H[\XÝÜÜ[Ù]Û\ÜÏH\ÚËXÙHHÚYÛYXØ[Ü[ÛÙÝ[X[Ý\ÝÛY\ÈX^HÝ\ÝÛÙØ\HZ[H[RHÜÜ]XØ[\Ú[\ÜÈÜ\][ÛÈ8 %\ÜXÚX[HY\X\[È]ÜÈXÝ]RH\ÜÈ[YÚ\ÝZÙ\ÈÛÛ^ËÜ]Û\ÜÏH\ÚË[Z]YØ][ÛÝÛÏZ]YØ][ÛÜÝÛÏYXØ[[Ü\[ÞN]\HÝ\ÝÛY\ÙY\ÈH\Ý\Ý[ËÙXÝ\]HØØ[\Ý[Ë[\]Z\[Y[È\YXØ][Û\ÜÜZ\ÙXÝZ[Ú]ÜÙPÜY[ÛY\ÈHXXÈÙ\YXØ][Û\ÚØ\[Û^KXXÚÈÝX\[YH[[Z[]\È[[ÚX[\ÚËÙHÝ\Ú]ÝÙ\\ÝZÙ\È\ÙHØ\Ù\È
+[\[ÛÛË]]ÛX][ÛØÜ\ÊHÈZ[\ÝYÜHXÚÛ[ÈZ\ÜÚ[ÛXÜ]XØ[\XØ][ÛËÙ]Ù]]Û\ÜÏH\ÚËXØ\]Û\ÜÏH\ÚËZXY\Ü[Ý[OHÛ\Ú^NÈ¼'ä&ÜÜ[ÏH\ÙHÛÛ\]]ÜZ[È\È\ÝÚÏÜ[Û\ÜÏHYÈYYÚ[\XÝÜÜ[Ù]Û\ÜÏH\ÚËXÙHÜ[RKÛÛÙÛKÜZXÜÜÛÙÛÝ[XÚYHÈZ[[[]ËY[ÙXÝ[]\H\[[H[Ý]Ü[ÜÙPÜYÈX\Ù]Ú]Z\^\Ý[È\Ù\\ÙKÜ]Û\ÜÏH\ÚË[Z]YØ][ÛÝÛÏZ]YØ][ÛÜÝÛÏ\ÙHÛÛ\[Y\ÈÜ[Z^HÜHX\ÜÈX\Ù]8 %ÜÙPÜYÚ[ÈHÛÚ[ÈY\\ÛÓPÈ[][X[H\Ø\KÚ\HYÈXÚ\ÈÈÝ\HÚZ[ÜX[YXÝ\[È^\\ÙKÝ\ÜY]\H\]Z\[Y[[XÚ]][Û\[[H[Z[]\Ù]ÛÛ\Ý[[[YH\Ý\[H]È[[Ø[Ø]Ú\HÚ[ÝÈÈ\ÝX\Ú\È[Ø]\ÈÝÈ8 %ÙIÜH[Ý[È\ÝÙ]Ù]Ù]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dTÒSÓ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYH\Ú[Û]Û\ÜÏHÛÛZ[\]Û\ÜÏHÙXÝ[Û[X[Ü[Û\ÜÏHYÈ\H\Ú[ÛÜÜ[Ù]Û\ÜÏH\Ú[ÛZXY[HÜ[Û\ÜÏHÜY]^LH\HÙX\ÜÈÙXÝ[Û\È[[ËÜÜ[H\HÙX\ÜÈÝ\ÝÛZ^][Û\ÈYÚ[[ËÚÝ[OHÛ\Ú^NNØÛÛÜ\K[]]Y
+NÛX^]ÚYÛX\Ú[]]È
+MÛ[KZZYÚKNÈÜLYX\ËXÛÛÛZXÈÜÝÝYX[XZÚ[ÈHØ[YH[ÈÜZ[[ÛÈÙ[ÜKRHXZÙ\ÈHY\[]\HÜÜÚXH8 %ÛHÚ\H]\H\ÛÛÙ]È^XÝHÚ]^HYYZ[Ü[K]HXÙH[[ÛHØ[YÜÜ]Û\ÜÏH\Ú[ÛYÜYYK]\]Û\ÜÏH\Ú[ÛXØ\]Û\ÜÏHXÛÛ¼'ä¨OÙ]
+Ú]\ÈXÛÛY\ÏÚ
+H]ÜHÚ\H[H\ÛÛØ[ÛÛ[Z\ÜÚ[Û[HÙXÝ8 %YÚ][Ü\ÚXØ[8 %[XÙZ]H]Z[\XÝKÚ][Ý\ËÈ[Ú[Y\ËÈXÝÜY\ËÈØZ][ËÜÙ]]Û\ÜÏH\Ú[ÛXØ\]Û\ÜÏHXÛÛ¼'äãÏÙ]
+ÝÈYÈ]Ù]ÏÚ
+ÛÙØ\H][ÜY[\ÈH	
+LX\Ù]\ÚXØ[X[YXÝ\[È\È	L
+ËÜÙPÜY	ÜÈ\[[H\Y\ÈÈÝHÝ[Y\ÜØXHÜÜ[]H\È[H[[ÛËÜÙ]]Û\ÜÏH\Ú[ÛXØ\]Û\ÜÏHXÛÛ¸¦¨OÙ]
+Ú]]\Ü\ÏÚ
+Ý\ÝÛHÛÙØ\H][ÜY[YÙ[ÚY\ËÙ]K\Ú[ØXTËÙXÝX[YXÝ\[È[Ý\HÚZ[Ë][X[NH[\HÛÛÙ\ÙX\ÜË\ÙXÙYÛÛÙËÜÙ]]Û\ÜÏH\Ú[ÛXØ\]Û\ÜÏHXÛÛ¼'å+OÙ]
+ÚH]	ÜÈH]\OÚ
+[[]HÝ\ÝÛZ^][ÛÚ]X\^\ÈX\Ú[[ÛÜÝ\ÈXÛÛÛZXØ[HÛZ[[Ý\X\ÜÈÙXÝ[ÛRHXZÙ\È\ÈÜÜÚXKÜÙPÜY\ÈH\ÝÛÛ\[HZ[[ÈH[\ÝXÝ\HÜ]ÜÙ]Ù]]Û\ÜÏHÚKXÞYK]\ØÚÜ][ÝOÜÙPÜYÚ[ÛÜÈXØ]\ÙHHXÚÛÙÞH\È[[HXYKHZ[\È[[XXK[ÈÛÛ\[H\ÈY]Z[H[\[[HÛHØ[H\ØÜ\[ÛÈ\YYY\ÝY[]\YÙXÝÙIÜHÝÛÛ\][ÈÛRH8 %ÙIÜHÛÛ\][ÈÛHÞ\Ý[H]\ÈRH[ÈHÛÛ\]HÙXÝXÝÜK]Þ\Ý[H\ÈÚ]ÙIÜHZ[[Ë[ÙIÜHZ[[È]ÝËÚ[HHÚ[ÝÈÈ\ÝX\ÚH]H[Ø]\ÈÜ[ØØÚÜ][ÝOÚ]O¸ %\XH[Ú]KÝ[\ÜÙPÜYØÚ]OÙ]Ù]ÜÙXÝ[Û]Û\ÜÏH]Y\Ù]KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dSTÕ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÙXÝ[ÛYH[\Ý]Û\ÜÏHÛÛZ[\]Û\ÜÏH[\ÝZ[\]Û\ÜÏH[\Ý]]H[\Ý[OÜ[Û\ÜÏHÜY]^XÝÜHÙH]\OÜÜ[Ù]Û\ÜÏH[\Ý\ÝXÜÙPÜY\ÈZ\Ú[ÈHK\ÙYYÝ[È[HUZ[Ý[[È\Ù\ÛÚÜ[\Ý]È][YKÙIÜHÛÚÚ[ÈÜ[\ÝÜÈÚÈ[Y]HRHÚ[[[Y[[HÚ[ÙHÝÈÙXÝÈÙ]XYKÜ]Û\ÜÏH[\ÝXXÝ[ÛÈHYHXZ[Î\XZ[Ú]PÛXZ[ÛÛOÜÝXXÝQÜÙPÜY[\ÝÜ[]Z\HÛ\ÜÏH\[X\H[ÈÛÛXÝÜ[\ÝÜXÚÈ8¡¤ØOHYHÝXÝ[ÛÛ\ÜÏH[Ý][H[ÈÚ[Ý[[È\Ù\ÛÚÜØOÙ]]Û\ÜÏH[\ÝZ[È]Û\ÜÏH[\ÝZ[ËZ][H]Û\ÜÏH[HÜY]^LÏÙ]]Û\ÜÏHX[K\ÙYY\Ù]Ù]Ù]]Û\ÜÏH[\ÝZ[ËZ][H]Û\ÜÏH[HÜY]^LÙYZÜÏÙ]]Û\ÜÏHX[ÈÛÜÚ[ÈUÙ]Ù]]Û\ÜÏH[\ÝZ[ËZ][H]Û\ÜÏH[HÜY]^K\][YOÙ]]Û\ÜÏHX[ÝYÙOÙ]Ù]]Û\ÜÏH[\ÝZ[ËZ][H]Û\ÜÏH[HÜY]^ÛÙØ\H8¡¤\Ø\OÙ]]Û\ÜÏHX[^[Ú[ÛØYX\Ù]Ù]Ù]Ù]Ù]ÜÙXÝ[ÛKKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÓÕT8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOÛÝ\]Û\ÜÏHÛÛZ[\ÛÝ\Z[\]Û\ÜÏHÛÝ\[ÙÛÈÜÙOÜ[ÜYÜÜ[Ù]]Û\ÜÏHÛÝ\[[ÜÈHYHÜØ[HØ[OØOHYHÜÛÛ][ÛÛÛ][ÛØOHYHØ\Ú[\ÜÈ\Ú[\ÜÈ[Ù[ØOHYHÜØYX\ØYX\ØOHYHÝX[HX[OØOHYHXZ[Î\XZ[Ú]PÛXZ[ÛÛHÛÛXÝØOÙ]]Û\ÜÏHÛÝ\XÛÜH°ªHÜÙPÜY0­ÈÜÙXÜYÛÛH0­È\XZ[Ú]PÛXZ[ÛÛOÙ]Ù]ÙÛÝ\KKH8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dKOØÜ\ËÈ]ØÜÛYXÝÛÛÝ]HØÝ[Y[Ù][[Y[RY
+	Û]ÊNÂÚ[ÝËY][\Ý[\	ÜØÜÛ	Ë
+
+HOÂ]Û\ÜÓ\ÝÙÙÛJ	ÜØÜÛY	ËÚ[ÝËØÜÛH
+
+NÂJNÂËÈ[Ø[H][Ý[ÛÙÙÛS[Ø[S]
+HÂØÝ[Y[Ù][[Y[RY
+	Û[Ø[S]ÊKÛ\ÜÓ\ÝÙÙÛJ	ÛÜ[ÊNÂB[Ý[ÛÛÜÙS[Ø[S]
+HÂØÝ[Y[Ù][[Y[RY
+	Û[Ø[S]ÊKÛ\ÜÓ\Ý[[ÝJ	ÛÜ[ÊNÂBËÈØÜÛYKZ[ÛÛÝØÙ\\H]È[\ÙXÝ[ÛØÙ\\
+[Y\ÊHOÂ[Y\ËÜXXÚ
+HOÂY
+K\Ò[\ÙXÝ[ÊHÂK\Ù]Û\ÜÓ\ÝY
+	Ý\ÚXIÊNÂØÙ\\[ØÙ\JK\Ù]
+NÂBJNÂKÈ\ÚÛHJNÂØÝ[Y[]Y\TÙ[XÝÜ[
+	ËYK]\	ÊKÜXXÚ
+[OØÙ\\ØÙ\J[
+JNÂËÈÛÝ[\[[X][Û[Ý[Û[[X]PÛÝ[
+[\Ù]ÝY^H	ÉÊHÂ]Ý\HÂÛÛÝ\][ÛHNÂÛÛÝÝ\H
+[Y\Ý[\
+HOÂY
+\Ý\
+HÝ\H[Y\Ý[\ÂÛÛÝÙÜ\ÜÈHX]Z[
+[Y\Ý[\HÝ\
+HÈ\][ÛJNÂÛÛÝX\ÙHHHHX]ÝÊHHÙÜ\ÜËÊNÂ[^ÛÛ[HX]Ý[
+X\ÙH
+\Ù]
+H
+ÈÝY^ÂY
+ÙÜ\ÜÈJH\]Y\Ý[[X][Û[YJÝ\
+NÂNÂ\]Y\Ý[[X][Û[YJÝ\
+NÂBÛÛÝÛÝ[ØÙ\\H]È[\ÙXÝ[ÛØÙ\\
+[Y\ÊHOÂ[Y\ËÜXXÚ
+HOÂY
+K\Ò[\ÙXÝ[ÊHÂÛÛÝ\Ù]H\ÙR[
+K\Ù]]\Ù]\Ù]
+NÂ[[X]PÛÝ[
+K\Ù]\Ù]
+NÂÛÝ[ØÙ\\[ØÙ\JK\Ù]
+NÂBJNÂKÈ\ÚÛHJNÂØÝ[Y[]Y\TÙ[XÝÜ[
+	ÖÙ]K]\Ù]IÊKÜXXÚ
+[OÛÝ[ØÙ\\ØÙ\J[
+JNÂËÈXÝ]H][ÂÛÛÝÙXÝ[ÛÈHØÝ[Y[]Y\TÙ[XÝÜ[
+	ÜÙXÝ[ÛÚYIÊNÂÛÛÝ][ÜÈHØÝ[Y[]Y\TÙ[XÝÜ[
+	Ë][[ÜÈIÊNÂÚ[ÝËY][\Ý[\	ÜØÜÛ	Ë
+
+HOÂ]Ý\[H	ÉÎÂÙXÝ[ÛËÜXXÚ
+ÈOÂY
+Ú[ÝËØÜÛHHËÙÙ]ÜHL
+HÝ\[HËYÂJNÂ][ÜËÜXXÚ
+HOÂKÝ[KÛÛÜHKÙ]]X]J	ÚYÊHOOH	ÈÉÈ
+ÈÝ\[È	Ý\K]^
+IÈ	ÉÎÂJNÂJNÂÜØÜ\ØÙOÚ[
