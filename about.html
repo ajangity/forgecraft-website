@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About â ForgeCraft</title>
+<meta name="description" content="Meet Arya Jangity, founder of ForgeCraft â the AI-powered platform that builds any custom product you can imagine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#030712;--bg2:#0f172a;--bg3:#1e293b;
+  --border:rgba(255,255,255,0.07);
+  --blue:#2563eb;--blue-l:#3b82f6;--cyan:#06b6d4;--cyan-l:#67e8f9;
+  --green:#10b981;--yellow:#f59e0b;--purple:#8b5cf6;
+  --text:#f1f5f9;--muted:#94a3b8;--faint:#475569;
+  --grad:linear-gradient(135deg,#2563eb,#06b6d4);
+  --radius:12px;--radius-lg:20px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+.container{max-width:1140px;margin:0 auto;padding:0 24px;}
+.grad-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;border:none;}
+.btn-primary{background:var(--grad);color:#fff;}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--blue-l);color:var(--text);}
+.btn-lg{padding:14px 28px;font-size:16px;border-radius:10px;}
+.tag{display:inline-flex;align-items:center;gap:6px;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.3);color:var(--blue-l);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:99px;}
+.tag.green{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#34d399;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
+.fade-up{opacity:0;transform:translateY(32px);transition:opacity .6s ease,transform .6s ease;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;transition:background .3s,border-color .3s;border-bottom:1px solid transparent;}
+#nav.scrolled{background:rgba(3,7,18,.88);backdrop-filter:blur(16px);border-color:var(--border);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;}
+.nav-logo{font-size:20px;font-weight:800;letter-spacing:-.02em;}
+.nav-logo span{color:var(--cyan);}
+.nav-links{display:flex;align-items:center;gap:32px;list-style:none;}
+.nav-links a{font-size:14px;font-weight:500;color:var(--muted);transition:color .2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);}
+.nav-cta{display:flex;gap:12px;}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);}
+.mobile-nav{display:none;position:fixed;inset:64px 0 0;z-index:99;background:rgba(3,7,18,.97);backdrop-filter:blur(16px);padding:32px 24px;flex-direction:column;gap:24px;}
+.mobile-nav.open{display:flex;}
+.mobile-nav a{font-size:20px;font-weight:600;color:var(--muted);padding:8px 0;border-bottom:1px solid var(--border);}
+
+/* HERO */
+.about-hero{padding:140px 0 80px;position:relative;overflow:hidden;}
+.about-hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(37,99,235,.15),transparent),radial-gradient(ellipse 40% 40% at 80% 70%,rgba(6,182,212,.08),transparent);}
+.about-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:60px 60px;}
+.about-hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.founder-photo{position:relative;}
+.founder-avatar{width:100%;max-width:380px;aspect-ratio:1;border-radius:var(--radius-lg);background:linear-gradient(135deg,#1B4F8A,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:120px;font-weight:900;color:rgba(255,255,255,.15);border:1px solid var(--border);position:relative;overflow:hidden;}
+.founder-avatar::after{content:'AJ';position:absolute;font-size:96px;font-weight:900;color:rgba(255,255,255,.9);font-family:'Inter',sans-serif;}
+.founder-badge{position:absolute;bottom:-16px;right:-16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 20px;}
+.founder-badge .role{font-size:13px;font-weight:700;color:var(--cyan);}
+.founder-badge .org{font-size:12px;color:var(--muted);margin-top:2px;}
+.about-intro h1{font-size:clamp(32px,4vw,52px);font-weight:900;line-height:1.1;letter-spacing:-.03em;margin:16px 0 20px;}
+.about-intro .lead{font-size:18px;color:var(--muted);line-height:1.65;margin-bottom:28px;}
+.about-intro .actions{display:flex;gap:12px;flex-wrap:wrap;}
+
+/* STORY */
+.story-section{padding:80px 0;}
+.story-grid{display:grid;grid-template-columns:1fr 2fr;gap:64px;}
+.story-nav{position:sticky;top:88px;align-self:start;}
+.story-nav-item{display:block;padding:10px 16px;font-size:14px;font-weight:600;color:var(--faint);border-left:2px solid var(--border);margin-bottom:4px;transition:all .2s;cursor:pointer;}
+.story-nav-item:hover,.story-nav-item.active{color:var(--text);border-color:var(--cyan);}
+.story-content{display:flex;flex-direction:column;gap:56px;}
+.story-block h2{font-size:26px;font-weight:800;margin-bottom:16px;letter-spacing:-.02em;}
+.story-block p{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:16px;}
+.story-block p strong{color:var(--text);}
+
+/* CREDENTIALS */
+.cred-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;}
+.cred-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.cred-card .icon{font-size:24px;margin-bottom:10px;}
+.cred-card h4{font-size:14px;font-weight:700;margin-bottom:6px;}
+.cred-card p{font-size:13px;color:var(--muted);}
+
+/* SKILLS */
+.skills-section{background:var(--bg2);padding:80px 0;}
+.skills-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;}
+.skill-area{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
+.skill-area .icon{font-size:28px;margin-bottom:12px;}
+.skill-area h3{font-size:15px;font-weight:700;margin-bottom:12px;}
+.skill-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.stag{font-size:12px;font-weight:600;background:var(--bg2);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--muted);}
+
+/* BANANABOTS */
+.bb-section{padding:80px 0;}
+.bb-card{background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(6,182,212,.04));border:1px solid rgba(37,99,235,.2);border-radius:var(--radius-lg);padding:48px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
+.bb-card h2{font-size:28px;font-weight:800;margin-bottom:12px;}
+.bb-card .lead{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
+.bb-projects{display:flex;flex-direction:column;gap:12px;}
+.bb-project{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;}
+.bb-project h4{font-size:14px;font-weight:700;margin-bottom:4px;}
+.bb-project p{font-size:13px;color:var(--muted);}
+
+/* WHY FC */
+.why-section{padding:80px 0;text-align:center;}
+.why-section h2{font-size:clamp(28px,4vw,42px);font-weight:900;margin-bottom:20px;letter-spacing:-.02em;}
+.why-section .lead{font-size:17px;color:var(--muted);max-width:600px;margin:0 auto 40px;line-height:1.65;}
+.why-quote{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;max-width:740px;margin:0 auto;}
+.why-quote blockquote{font-size:18px;font-weight:500;line-height:1.65;color:var(--text);margin-bottom:16px;}
+.why-quote cite{font-size:13px;color:var(--faint);font-style:normal;}
+
+/* CTA */
+.about-cta{padding:80px 0;}
+.about-cta-inner{background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(6,182,212,.06));border:1px solid rgba(37,99,235,.2);border-radius:var(--radius-lg);padding:56px;text-align:center;}
+.about-cta-inner h2{font-size:clamp(26px,3vw,38px);font-weight:900;margin-bottom:12px;}
+.about-cta-inner p{font-size:16px;color:var(--muted);max-width:500px;margin:0 auto 32px;}
+.about-cta-inner .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 0;}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.footer-logo{font-size:18px;font-weight:800;letter-spacing:-.02em;}
+.footer-logo span{color:var(--cyan);}
+.footer-links{display:flex;gap:24px;}
+.footer-links a{font-size:13px;color:var(--faint);transition:color .2s;}
+.footer-links a:hover{color:var(--muted);}
+.footer-copy{font-size:12px;color:var(--faint);}
+
+@media(max-width:900px){
+  .nav-links,.nav-cta{display:none;}
+  .hamburger{display:flex;}
+  .about-hero-inner,.story-grid,.bb-card,.cred-grid,.skills-grid{grid-template-columns:1fr;}
+  .story-nav{display:none;}
+  .founder-avatar{max-width:240px;}
+}
+@media(max-width:600px){
+  .about-cta-inner{padding:32px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">Forge<span>Craft</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html#problem">Problem</a></li>
+      <li><a href="index.html#solution">Solution</a></li>
+      <li><a href="index.html#how">How It Works</a></li>
+      <li><a href="index.html#business">Business</a></li>
+      <li><a href="about.html" class="active">About</a></li>
+      <li><a href="index.html#invest">Investors</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="index.html#invest" class="btn btn-outline">Investor Info</a>
+      <a href="platform.html" class="btn btn-primary">Try ForgeCraft â</a>
+    </div>
+    <div class="hamburger" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobileNav">
+  <a href="index.html" onclick="closeMobileNav()">Home</a>
+  <a href="index.html#problem" onclick="closeMobileNav()">Problem</a>
+  <a href="index.html#solution" onclick="closeMobileNav()">Solution</a>
+  <a href="index.html#how" onclick="closeMobileNav()">How It Works</a>
+  <a href="about.html" onclick="closeMobileNav()">About</a>
+  <a href="index.html#invest" onclick="closeMobileNav()">Investors</a>
+  <a href="platform.html" class="btn btn-primary" style="text-align:center" onclick="closeMobileNav()">Try ForgeCraft â</a>
+</div>
+
+<!-- HERO -->
+<section class="about-hero">
+  <div class="about-hero-bg"></div>
+  <div class="about-hero-grid"></div>
+  <div class="container">
+    <div class="about-hero-inner">
+      <div class="about-intro fade-up">
+        <span class="tag green">Founder</span>
+        <h1>Hi, I'm Arya.<br><span class="grad-text">I'm building ForgeCraft.</span></h1>
+        <p class="lead">
+          I'm a robotics engineering student at UC Santa Cruz, co-founder of BananaBots, and
+          someone who has spent years frustrated that building the right tool for a specific
+          problem costs too much, takes too long, and requires skills most people don't have.
+          ForgeCraft is my answer to that problem.
+        </p>
+        <div class="actions">
+          <a href="platform.html" class="btn btn-primary btn-lg">Try ForgeCraft â</a>
+          <a href="mailto:aryajangity@gmail.com" class="btn btn-outline btn-lg">Get in Touch</a>
+        </div>
+      </div>
+      <div class="founder-photo fade-up" style="transition-delay:.15s">
+        <div class="founder-avatar"></div>
+        <div class="founder-badge">
+          <div class="role">Founder &amp; CEO Â· ForgeCraft</div>
+          <div class="org">Co-Founder Â· BananaBots @ UC Santa Cruz</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STORY -->
+<section class="story-section">
+  <div class="container">
+    <div class="story-grid">
+      <div class="story-nav">
+        <div style="font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;">On this page</div>
+        <a class="story-nav-item active" href="#background">Background</a>
+        <a class="story-nav-item" href="#bananabots">BananaBots</a>
+        <a class="story-nav-item" href="#skills">Skills &amp; Experience</a>
+        <a class="story-nav-item" href="#why">Why ForgeCraft</a>
+        <a class="story-nav-item" href="#mission">Mission &amp; Vision</a>
+      </div>
+
+      <div class="story-content">
+
+        <div class="story-block fade-up" id="background">
+          <span class="tag" style="margin-bottom:16px;display:inline-flex;">Background</span>
+          <h2>From Robotics Labs to Building the Future of Products</h2>
+          <p>
+            I'm studying robotics engineering at UC Santa Cruz â a program that forces you to live at the intersection of hardware and software, to build systems that actually work in the physical world, and to solve problems where "almost correct" isn't good enough.
+          </p>
+          <p>
+            That mindset shapes everything I build. I care about systems that are <strong>verifiably correct</strong>, not just plausible. I care about the full pipeline â from the problem statement to the delivered product. And I care about building things that actually help people, not just impressive demos.
+          </p>
+          <p>
+            Robotics taught me that the hardest problems aren't in any single component. They're in the <strong>integration</strong> â making all the parts work together reliably, in the real world, under conditions you didn't fully anticipate. That's exactly the problem ForgeCraft solves.
+          </p>
+          <div class="cred-grid">
+            <div class="cred-card">
+              <div class="icon">ð</div>
+              <h4>UC Santa Cruz</h4>
+              <p>Robotics Engineering student. Deep focus on systems integration, hardware-software co-design, and autonomous systems.</p>
+            </div>
+            <div class="cred-card">
+              <div class="icon">ð</div>
+              <h4>BananaBots Co-President</h4>
+              <p>Co-founded and lead an engineering organization that ships real assistive technology products, not just coursework projects.</p>
+            </div>
+            <div class="cred-card">
+              <div class="icon">ð§</div>
+              <h4>Hardware + Software</h4>
+              <p>Rare combination: I've shipped both physical hardware (wearables, sensor systems) and software backends. I understand both sides of the ForgeCraft vision.</p>
+            </div>
+            <div class="cred-card">
+              <div class="icon">â¡</div>
+              <h4>Ships Fast</h4>
+              <p>BananaBots shipped 3 real product prototypes in 2 semesters. I build iteratively and I build to ship â not to demo in a lab forever.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="story-block fade-up" id="bananabots">
+          <span class="tag green" style="margin-bottom:16px;display:inline-flex;">BananaBots</span>
+          <h2>Shipping Real Products for Real Users</h2>
+          <p>
+            BananaBots is the engineering organization I co-founded and co-lead at UC Santa Cruz. Our mission is to build assistive technology â real products that improve quality of life for people with disabilities, not research prototypes that sit in a drawer.
+          </p>
+          <p>
+            Running BananaBots taught me more about building products under constraints than any class could. <strong>Limited budget, limited time, diverse team, real users with real needs</strong> â that's the environment where I learned to ship.
+          </p>
+          <p>
+            It also taught me how frustrating it is when the tools don't fit the problem. We constantly needed custom software for specific BananaBots workflows â data dashboards, tracking systems, onboarding tools â and building each one from scratch consumed time we needed for the actual product work. That frustration is what ForgeCraft is designed to eliminate.
+          </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="story-block fade-up" id="skills">
+          <span class="tag" style="margin-bottom:16px;display:inline-flex;">Skills &amp; Experience</span>
+          <h2>The Technical Foundation Behind ForgeCraft</h2>
+          <p>
+            ForgeCraft requires an unusual combination of skills: deep software systems knowledge, hardware and manufacturing understanding, AI pipeline experience, and product instincts. I bring most of this directly, and I'm hiring for the gaps.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS GRID -->
+<section class="skills-section">
+  <div class="container">
+    <div class="skills-grid fade-up">
+      <div class="skill-area">
+        <div class="icon">ð»</div>
+        <h3>Software Engineering</h3>
+        <div class="skill-tags">
+          <span class="stag">Python</span>
+          <span class="stag">JavaScript</span>
+          <span class="stag">Java</span>
+          <span class="stag">Assembly (RISC-V)</span>
+          <span class="stag">React</span>
+          <span class="stag">Flask</span>
+          <span class="stag">FastAPI</span>
+          <span class="stag">REST APIs</span>
+          <span class="stag">Git / GitHub</span>
+        </div>
+      </div>
+      <div class="skill-area">
+        <div class="icon">ð¤</div>
+        <h3>Robotics &amp; Hardware</h3>
+        <div class="skill-tags">
+          <span class="stag">Robotics Systems</span>
+          <span class="stag">Sensor Fusion</span>
+          <span class="stag">Wearable Hardware</span>
+          <span class="stag">Hardware Prototyping</span>
+          <span class="stag">Embedded Systems</span>
+          <span class="stag">Assistive Tech</span>
+          <span class="stag">PCB Design (learning)</span>
+        </div>
+      </div>
+      <div class="skill-area">
+        <div class="icon">ð</div>
+        <h3>Tools &amp; Platforms</h3>
+        <div class="skill-tags">
+          <span class="stag">VS Code</span>
+          <span class="stag">Chart.js</span>
+          <span class="stag">Leaflet</span>
+          <span class="stag">Slack</span>
+          <span class="stag">Notion</span>
+          <span class="stag">Docker</span>
+          <span class="stag">Claude API</span>
+          <span class="stag">Supabase</span>
+        </div>
+      </div>
+      <div class="skill-area">
+        <div class="icon">ð¯</div>
+        <h3>Product &amp; Leadership</h3>
+        <div class="skill-tags">
+          <span class="stag">Team Leadership</span>
+          <span class="stag">Product Strategy</span>
+          <span class="stag">User Research</span>
+          <span class="stag">Requirements Engineering</span>
+          <span class="stag">Agile / Sprint Planning</span>
+          <span class="stag">Technical Recruiting</span>
+        </div>
+      </div>
+      <div class="skill-area">
+        <div class="icon">ð§ </div>
+        <h3>AI &amp; Automation</h3>
+        <div class="skill-tags">
+          <span class="stag">LLM API Integration</span>
+          <span class="stag">Prompt Engineering</span>
+          <span class="stag">AI Pipeline Design</span>
+          <span class="stag">Automated Testing</span>
+          <span class="stag">Code Generation Systems</span>
+        </div>
+      </div>
+      <div class="skill-area">
+        <div class="icon">ð±</div>
+        <h3>Currently Hiring For</h3>
+        <div class="skill-tags" style="margin-bottom:8px;">
+          <span class="stag" style="border-color:rgba(37,99,235,.4);color:var(--blue-l)">AI/Backend Pipeline Eng.</span>
+          <span class="stag" style="border-color:rgba(37,99,235,.4);color:var(--blue-l)">Frontend / UX Engineer</span>
+        </div>
+        <p style="font-size:12px;color:var(--faint);margin-top:8px;">Interested? <a href="mailto:aryajangity@gmail.com?subject=ForgeCraft Team Inquiry" style="color:var(--blue-l);">aryajangity@gmail.com</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BANANABOTS DETAIL -->
+<section class="bb-section">
+  <div class="container">
+    <div class="bb-card fade-up" id="bananabots-detail">
+      <div>
+        <span class="tag green" style="margin-bottom:16px;display:inline-flex;">BananaBots</span>
+        <h2>Engineering Org I Co-Founded at UCSC</h2>
+        <p class="lead">BananaBots is a student engineering organization at UC Santa Cruz focused on building assistive technology. As co-founder and co-president, I've led a multi-disciplinary team across robotics, software, and hardware to ship real products for real users.</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.7;">The experience of running BananaBots â recruiting engineers, managing hardware-software integration, shipping under real constraints, and solving problems for users who depend on the outcome â is the foundation of how I approach ForgeCraft. I've done product development the hard, manual way. ForgeCraft exists to make it automatic.</p>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;">Projects &amp; Initiatives</div>
+        <div class="bb-projects">
+          <div class="bb-project">
+            <h4>ð BananaPuck â Wearable Safety Device</h4>
+            <p>A wearable safety device designed to assist users who need fall detection or emergency notification. Hardware + software integration, sensor fusion, real-time data processing.</p>
+          </div>
+          <div class="bb-project">
+            <h4>ðºï¸ BananaPath â Accessibility Navigation</h4>
+            <p>A navigation system designed for accessibility â helping users with mobility limitations navigate spaces more effectively. Combines Leaflet mapping with sensor data and backend routing.</p>
+          </div>
+          <div class="bb-project">
+            <h4>âï¸ Team Automation &amp; Tooling</h4>
+            <p>Built internal tools for team management, onboarding, task workflows, and project tracking â the exact kind of custom internal tooling that ForgeCraft is designed to make available to everyone.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHY FORGECRAFT -->
+<section class="why-section">
+  <div class="container">
+    <span class="tag" style="margin-bottom:24px;display:inline-flex;">Why ForgeCraft</span>
+    <h2 id="why">Why I'm Building This</h2>
+    <p class="lead">
+      I've experienced the problem firsthand â trying to build the right tool for the right problem, with limited time and limited resources. ForgeCraft is the platform I wish had existed.
+    </p>
+    <div class="why-quote fade-up">
+      <blockquote>
+        "Every time I needed a custom tool at BananaBots â a tracking dashboard, an onboarding system, a data pipeline â I had two choices: spend days building it from scratch, or settle for a generic tool that sort of fit. Neither was acceptable.
+        <br><br>
+        I kept thinking: the code for these tools is not novel. The patterns are well-understood. The only reason it takes days is because humans have to write it. AI can write it. And if AI can write it, it can also test it, verify it meets requirements, and deliver it. That's the entire ForgeCraft pipeline â built from that frustration."
+      </blockquote>
+      <cite>â Arya Jangity, Founder, ForgeCraft</cite>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MISSION & VISION -->
+<section style="padding:80px 0;background:var(--bg2);" id="mission">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:56px;">
+      <span class="tag" style="margin-bottom:16px;display:inline-flex;">Mission &amp; Vision</span>
+      <h2 style="font-size:clamp(28px,4vw,42px);font-weight:900;letter-spacing:-.02em;margin-bottom:16px;">What We're Building Toward</h2>
+      <p style="font-size:17px;color:var(--muted);max-width:580px;margin:0 auto;">ForgeCraft exists to remove the barrier between what people need and what they can have.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="fade-up">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;">
+        <div style="font-size:13px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Our Mission</div>
+        <p style="font-size:20px;font-weight:700;line-height:1.45;margin-bottom:16px;">"Make custom product development accessible to every person and business on earth â regardless of technical skill or budget."</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.65;">Today, getting a custom software product built requires either significant money ($50K+), technical expertise, or months of time. ForgeCraft removes all three barriers. Anyone with a problem and an internet connection can get a custom solution.</p>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;">
+        <div style="font-size:13px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Our Vision</div>
+        <p style="font-size:20px;font-weight:700;line-height:1.45;margin-bottom:16px;">"A world where any person can commission any product â digital or physical â and receive it, built perfectly, within hours."</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.65;">Software is Phase 1. Physical hardware is Phase 2. The same autonomous pipeline â describe, design, build, verify, test, deliver â works for both. ForgeCraft is the infrastructure layer for a world of infinite, affordable customization.</p>
+      </div>
+    </div>
+    <div style="margin-top:24px;background:var(--bg3);border:1px solid rgba(37,99,235,.2);border-radius:var(--radius);padding:28px 32px;text-align:center;" class="fade-up">
+      <p style="font-size:16px;font-weight:600;line-height:1.6;">The era of mass production â one product for millions of people â is ending.<br><span style="color:var(--cyan);">The era of mass customization â one perfect product for each person â is beginning.</span></p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="about-cta">
+  <div class="container">
+    <div class="about-cta-inner fade-up">
+      <h2>Ready to build something?</h2>
+      <p>Describe your problem. ForgeCraft builds the solution. No engineering background required.</p>
+      <div class="actions">
+        <a href="platform.html" class="btn btn-primary btn-lg">Launch ForgeCraft â</a>
+        <a href="mailto:aryajangity@gmail.com?subject=ForgeCraft Investor Inquiry" class="btn btn-outline btn-lg">Investor Information</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-logo">Forge<span>Craft</span></div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#problem">Problem</a>
+      <a href="index.html#solution">Solution</a>
+      <a href="index.html#business">Business</a>
+      <a href="about.html">About</a>
+      <a href="mailto:aryajangity@gmail.com">Contact</a>
+    </div>
+    <div class="footer-copy">Â© 2026 ForgeCraft Â· forgecraft.com</div>
+  </div>
+</footer>
+
+<script>
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 40); });
+function toggleMobileNav() { document.getElementById('mobileNav').classList.toggle('open'); }
+function closeMobileNav() { document.getElementById('mobileNav').classList.remove('open'); }
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Story nav active state
+const blocks = document.querySelectorAll('.story-block[id], .bb-card[id]');
+const navItems = document.querySelectorAll('.story-nav-item');
+window.addEventListener('scroll', () => {
+  let current = '';
+  blocks.forEach(b => { if (window.scrollY >= b.offsetTop - 160) current = b.id; });
+  navItems.forEach(a => {
+    const href = a.getAttribute('href').replace('#','');
+    a.classList.toggle('active', href === current);
+  });
+});
+</script>
+</body>
+</html>
