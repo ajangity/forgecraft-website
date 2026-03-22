@@ -1,1 +1,7 @@
-{\n  "version": 2,\n  "builds": [{ "src": "*.html", "use": "@vercel/static" }],\n  "routes": [\n    { "src": "/", "dest": "/index.html" },\n    { "src": "/about", "dest": "/about.html" },\n    { "src": "/platform", "dest": "/platform.html" }\n  ]\n}
+{
+    "cleanUrls": true,
+    "rewrites": [
+          { "source": "/about", "destination": "/about.html" },
+          { "source": "/platform", "destination": "/platform.html" }
+    ]
+}
