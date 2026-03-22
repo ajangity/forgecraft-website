@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForgeCraft — AI Builds Any Product You Can Imagine</title>
+<meta name="description" content="Describe your problem. ForgeCraft designs, builds, tests, and delivers custom software — fully automated, no engineers needed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #030712;
+  --bg2:       #0f172a;
+  --bg3:       #1e293b;
+  --border:    rgba(255,255,255,0.07);
+  --blue:      #2563eb;
+  --blue-l:    #3b82f6;
+  --cyan:      #06b6d4;
+  --cyan-l:    #67e8f9;
+  --green:     #10b981;
+  --yellow:    #f59e0b;
+  --red:       #ef4444;
+  --purple:    #8b5cf6;
+  --text:      #f1f5f9;
+  --muted:     #94a3b8;
+  --faint:     #475569;
+  --grad:      linear-gradient(135deg, #2563eb, #06b6d4);
+  --grad2:     linear-gradient(135deg, #8b5cf6, #2563eb);
+  --radius:    12px;
+  --radius-lg: 20px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ── UTILITIES ── */
+.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+.grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.grad-text-2 {
+  background: var(--grad2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(37,99,235,.12); border: 1px solid rgba(37,99,235,.3);
+  color: var(--blue-l); font-size: 12px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 99px;
+}
+.tag.green  { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); color: #34d399; }
+.tag.purple { background: rgba(139,92,246,.12); border-color: rgba(139,92,246,.3); color: #a78bfa; }
+.tag.yellow { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.3); color: #fbbf24; }
+.tag.red    { background: rgba(239,68,68,.12);  border-color: rgba(239,68,68,.3);  color: #f87171; }
+.section-label { text-align: center; margin-bottom: 16px; }
+.section-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800; line-height: 1.2;
+  text-align: center; margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 18px; color: var(--muted);
+  text-align: center; max-width: 640px;
+  margin: 0 auto 56px;
+}
+section { padding: 96px 0; }
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ── FADE IN ── */
+.fade-up {
+  opacity: 0; transform: translateY(32px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ── NAV ── */
+#nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  transition: background .3s, border-color .3s;
+  border-bottom: 1px solid transparent;
+}
+#nav.scrolled {
+  background: rgba(3,7,18,.88);
+  backdrop-filter: blur(16px);
+  border-color: var(--border);
+}
+.nav-inner {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.nav-logo {
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -.02em;
+}
+.nav-logo span { color: var(--cyan); }
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 14px; font-weight: 500; color: var(--muted);
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  display: flex; gap: 12px;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all .2s; border: none;
+}
+.btn-primary {
+  background: var(--grad); color: #fff;
+}
+.btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-outline:hover { border-color: var(--blue-l); color: var(--text); }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: 10px; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--text); transition: .3s; }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  padding: 120px 0 80px;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,.22), transparent),
+              radial-gradient(ellipse 50% 40% at 80% 60%, rgba(6,182,212,.12), transparent);
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-content { position: relative; z-index: 1; text-align: center; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(6,182,212,.1); border: 1px solid rgba(6,182,212,.25);
+  color: var(--cyan-l); font-size: 13px; font-weight: 600;
+  padding: 6px 16px; border-radius: 99px; margin-bottom: 32px;
+}
+.hero-badge .dot { width: 6px; height: 6px; background: var(--cyan); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+.hero-title {
+  font-size: clamp(40px, 6vw, 76px);
+  font-weight: 900; line-height: 1.08;
+  letter-spacing: -.03em; margin-bottom: 24px;
+}
+.hero-sub {
+  font-size: clamp(17px, 2.2vw, 21px);
+  color: var(--muted); max-width: 620px;
+  margin: 0 auto 40px; line-height: 1.6;
+}
+.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero-stats {
+  display: flex; justify-content: center; gap: 48px;
+  flex-wrap: wrap; margin-top: 72px;
+  padding-top: 48px;
+  border-top: 1px solid var(--border);
+}
+.stat-item { text-align: center; }
+.stat-num {
+  font-size: 36px; font-weight: 800;
+  letter-spacing: -.02em; line-height: 1;
+}
+.stat-label { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+/* ── PIPELINE PREVIEW ── */
+#pipeline-preview {
+  padding: 0 0 80px;
+}
+.pipeline-steps {
+  display: flex; align-items: center;
+  gap: 0; overflow-x: auto;
+  padding: 32px 40px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.pipeline-step {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  flex: 1; min-width: 120px; text-align: center;
+  position: relative;
+}
+.pipeline-step:not(:last-child)::after {
+  content: '';
+  position: absolute; right: -1px; top: 20px;
+  width: 2px; height: 2px;
+}
+.step-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  background: rgba(37,99,235,.15); border: 1px solid rgba(37,99,235,.25);
+}
+.step-num { font-size: 10px; color: var(--faint); font-weight: 600; letter-spacing: .06em; }
+.step-label { font-size: 13px; font-weight: 600; }
+.step-arrow {
+  font-size: 20px; color: var(--faint);
+  flex-shrink: 0; padding: 0 8px;
+  margin-top: -16px;
+}
+
+/* ── PROBLEM ── */
+#problem { background: var(--bg); }
+.problem-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin-bottom: 48px;
+}
+.pain-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+  transition: border-color .2s;
+}
+.pain-card:hover { border-color: rgba(239,68,68,.3); }
+.pain-stat {
+  font-size: 40px; font-weight: 900;
+  letter-spacing: -.03em; color: #f87171;
+  line-height: 1; margin-bottom: 8px;
+}
+.pain-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.pain-card p  { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.options-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.option-card {
+  padding: 24px; border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.option-card.bad  { background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.15); }
+.option-card.ok   { background: rgba(245,158,11,.05); border-color: rgba(245,158,11,.15); }
+.option-card.good { background: rgba(37,99,235,.08);  border-color: rgba(37,99,235,.25); }
+.option-card .icon { font-size: 28px; margin-bottom: 12px; }
+.option-card h4   { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.option-card p    { font-size: 13px; color: var(--muted); }
+.option-card .verdict {
+  font-size: 12px; font-weight: 700;
+  margin-top: 12px; letter-spacing: .04em;
+}
+.option-card.bad .verdict  { color: #f87171; }
+.option-card.ok .verdict   { color: #fbbf24; }
+.option-card.good .verdict { color: var(--cyan); }
+
+/* ── SOLUTION ── */
+#solution { background: var(--bg2); }
+.solution-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 48px; align-items: center;
+}
+.feature-list { display: flex; flex-direction: column; gap: 20px; }
+.feature-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 20px; border-radius: var(--radius);
+  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+  transition: border-color .2s;
+}
+.feature-item:hover { border-color: rgba(6,182,212,.3); }
+.feature-icon {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; background: var(--bg3);
+}
+.feature-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.feature-item p  { font-size: 13px; color: var(--muted); }
+.solution-visual {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 32px;
+}
+.timeline-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding-bottom: 28px; position: relative;
+}
+.timeline-item:not(:last-child)::before {
+  content: ''; position: absolute;
+  left: 20px; top: 44px; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.timeline-dot {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.timeline-dot.active {
+  background: var(--blue); border-color: var(--blue-l);
+  box-shadow: 0 0 20px rgba(37,99,235,.4);
+}
+.timeline-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.timeline-item p  { font-size: 13px; color: var(--muted); }
+
+/* ── HOW IT WORKS ── */
+#how { background: var(--bg); }
+.how-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; border-radius: var(--radius-lg); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.how-card {
+  background: var(--bg2); padding: 32px 28px;
+  position: relative; overflow: hidden;
+  transition: background .2s;
+}
+.how-card:hover { background: var(--bg3); }
+.how-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--grad); opacity: 0;
+  transition: opacity .2s;
+}
+.how-card:hover::before { opacity: 1; }
+.how-num {
+  font-size: 56px; font-weight: 900;
+  color: rgba(255,255,255,.04); line-height: 1;
+  position: absolute; right: 16px; top: 8px;
+  letter-spacing: -.04em;
+}
+.how-icon { font-size: 28px; margin-bottom: 12px; }
+.how-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.how-card p  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.how-auto { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+.auto-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 4px;
+}
+.auto-badge.auto { background: rgba(16,185,129,.15); color: #34d399; }
+.auto-badge.manual { background: rgba(245,158,11,.15); color: #fbbf24; }
+
+/* ── FEASIBILITY ── */
+#feasibility { background: var(--bg2); }
+.feasibility-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.feas-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+}
+.feas-card h3 {
+  font-size: 16px; font-weight: 700;
+  margin: 12px 0 8px; display: flex; gap: 8px; align-items: center;
+}
+.feas-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.check-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.check-list li {
+  display: flex; gap: 8px; align-items: flex-start;
+  font-size: 13px; list-style: none;
+}
+.check-list li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+/* ── MARKET ── */
+#market { background: var(--bg); }
+.market-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 16px; margin-bottom: 48px;
+}
+.market-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px; text-align: center;
+}
+.market-num {
+  font-size: 38px; font-weight: 900; line-height: 1;
+  margin-bottom: 6px; letter-spacing: -.02em;
+}
+.market-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.market-card p  { font-size: 13px; color: var(--muted); }
+.expansion-row {
+  display: flex; align-items: center; gap: 0;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.exp-step {
+  flex: 1; padding: 20px 24px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.exp-step:last-child { border-right: none; }
+.exp-step h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.exp-step p  { font-size: 12px; color: var(--muted); }
+
+/* ── TRACTION ── */
+#traction { background: var(--bg2); }
+.traction-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px; margin-bottom: 40px;
+}
+.traction-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+}
+.traction-card .num {
+  font-size: 32px; font-weight: 900; line-height: 1;
+  margin-bottom: 6px;
+}
+.traction-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.traction-card p  { font-size: 13px; color: var(--muted); }
+.founding-banner {
+  background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(6,182,212,.08));
+  border: 1px solid rgba(37,99,235,.25);
+  border-radius: var(--radius); padding: 32px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+}
+.founding-banner h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.founding-banner p  { font-size: 14px; color: var(--muted); max-width: 460px; }
+
+/* ── BUSINESS MODEL ── */
+#business { background: var(--bg); }
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 16px; margin-bottom: 48px;
+}
+.price-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+  transition: border-color .2s, transform .2s;
+  position: relative;
+}
+.price-card:hover { transform: translateY(-4px); }
+.price-card.featured {
+  border-color: var(--blue); background: rgba(37,99,235,.06);
+}
+.popular-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--grad); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 14px; border-radius: 99px;
+}
+.price-name { font-size: 14px; font-weight: 700; color: var(--muted); margin-bottom: 12px; }
+.price-val {
+  font-size: 36px; font-weight: 900; line-height: 1;
+  letter-spacing: -.02em; margin-bottom: 4px;
+}
+.price-period { font-size: 13px; color: var(--faint); margin-bottom: 20px; }
+.price-features { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.price-features li {
+  display: flex; gap: 8px; font-size: 13px; align-items: flex-start;
+}
+.price-features li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-weight: 700; }
+.unit-econ {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 16px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px;
+}
+.econ-item { text-align: center; }
+.econ-item .num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.econ-item .label { font-size: 13px; color: var(--muted); }
+
+/* ── GTM ── */
+#gtm { background: var(--bg2); }
+.gtm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.gtm-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+}
+.gtm-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.gtm-step {
+  display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
+}
+.gtm-step-num {
+  width: 24px; height: 24px; flex-shrink: 0;
+  background: var(--blue); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.gtm-step p { font-size: 13px; color: var(--muted); }
+.gtm-step strong { color: var(--text); font-weight: 600; }
+
+/* ── COMPETITION ── */
+#competition { background: var(--bg); }
+.comp-table {
+  width: 100%; border-collapse: collapse;
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.comp-table th, .comp-table td {
+  padding: 14px 20px; font-size: 13px; text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.comp-table thead th {
+  background: var(--bg3); font-weight: 700; font-size: 14px;
+}
+.comp-table thead th:first-child { text-align: left; }
+.comp-table td:first-child { text-align: left; font-weight: 600; }
+.comp-table tbody tr:nth-child(even) { background: var(--bg2); }
+.comp-table tbody tr:last-child td { border-bottom: none; }
+.comp-table .fc-col { background: rgba(37,99,235,.08); }
+.comp-table .fc-col th { color: var(--cyan); }
+.yes { color: var(--green); font-size: 16px; }
+.no  { color: var(--red);   font-size: 16px; }
+.partial { color: var(--yellow); font-size: 16px; }
+
+/* ── MOAT ── */
+#moat { background: var(--bg2); }
+.moat-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+}
+.moat-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  transition: border-color .2s;
+}
+.moat-card:hover { border-color: rgba(139,92,246,.35); }
+.moat-icon { font-size: 28px; margin-bottom: 12px; }
+.moat-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.moat-card p  { font-size: 13px; color: var(--muted); }
+
+/* ── ROADMAP ── */
+#roadmap { background: var(--bg); }
+.roadmap-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 0;
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.roadmap-phase {
+  padding: 28px; border-right: 1px solid var(--border);
+  position: relative;
+}
+.roadmap-phase:last-child { border-right: none; }
+.roadmap-phase.active {
+  background: rgba(37,99,235,.06);
+  border-top: 2px solid var(--blue);
+}
+.phase-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+}
+.phase-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.phase-timeline { font-size: 12px; color: var(--cyan); margin-bottom: 16px; font-weight: 600; }
+.phase-milestones { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.phase-milestones li {
+  font-size: 12px; color: var(--muted);
+  display: flex; gap: 6px;
+}
+.phase-milestones li::before { content: '→'; color: var(--faint); flex-shrink: 0; }
+
+/* ── TEAM ── */
+#team { background: var(--bg2); }
+.team-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; align-items: start; }
+.team-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 36px;
+}
+.team-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--grad); display: flex; align-items: center;
+  justify-content: center; font-size: 28px; font-weight: 800;
+  margin-bottom: 20px; color: #fff;
+}
+.team-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.team-title { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+.team-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.skill-tag {
+  font-size: 12px; font-weight: 600;
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 6px; color: var(--muted);
+}
+.team-bio { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.hiring-list { display: flex; flex-direction: column; gap: 16px; }
+.hire-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.hire-card .role-icon { font-size: 24px; }
+.hire-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.hire-card p  { font-size: 13px; color: var(--muted); }
+
+/* ── RISKS ── */
+#risks { background: var(--bg); }
+.risks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.risk-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; cursor: pointer;
+}
+.risk-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.risk-header h3 { font-size: 15px; font-weight: 700; flex: 1; }
+.risk-body { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.risk-mitigation {
+  margin-top: 12px; padding: 12px;
+  background: rgba(16,185,129,.05); border: 1px solid rgba(16,185,129,.15);
+  border-radius: 8px; font-size: 12px; color: #34d399;
+}
+.risk-mitigation strong { display: block; margin-bottom: 4px; font-weight: 700; }
+
+/* ── VISION ── */
+#vision {
+  background: var(--bg2);
+  text-align: center;
+}
+.vision-headline {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -.03em; max-width: 900px; margin: 0 auto 24px;
+}
+.vision-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+  margin: 56px 0;
+}
+.vision-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; text-align: left;
+}
+.vision-card .icon { font-size: 24px; margin-bottom: 10px; }
+.vision-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.vision-card p  { font-size: 13px; color: var(--muted); }
+.why-box {
+  background: linear-gradient(135deg, rgba(37,99,235,.1), rgba(6,182,212,.06));
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--radius-lg); padding: 48px;
+  max-width: 780px; margin: 0 auto;
+}
+.why-box blockquote {
+  font-size: clamp(18px, 2.5vw, 22px);
+  font-weight: 600; line-height: 1.55;
+  color: var(--text); margin-bottom: 16px;
+}
+.why-box cite { font-size: 13px; color: var(--muted); font-style: normal; }
+
+/* ── INVEST / CTA ── */
+#invest { background: var(--bg); padding: 96px 0; }
+.invest-inner {
+  background: linear-gradient(135deg, rgba(37,99,235,.1), rgba(6,182,212,.06));
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--radius-lg); padding: 72px 48px;
+  text-align: center;
+}
+.invest-title {
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 900; letter-spacing: -.02em; margin-bottom: 16px;
+}
+.invest-sub { font-size: 17px; color: var(--muted); max-width: 520px; margin: 0 auto 40px; }
+.invest-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+.invest-info {
+  display: flex; gap: 48px; justify-content: center; flex-wrap: wrap;
+  padding-top: 32px; border-top: 1px solid var(--border);
+}
+.invest-info-item { text-align: center; }
+.invest-info-item .num { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.invest-info-item .label { font-size: 12px; color: var(--muted); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--bg); border-top: 1px solid var(--border);
+  padding: 40px 0;
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+.footer-logo { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+.footer-logo span { color: var(--cyan); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 13px; color: var(--faint); transition: color .2s; }
+.footer-links a:hover { color: var(--muted); }
+.footer-copy { font-size: 12px; color: var(--faint); }
+
+/* ── MOBILE ── */
+@media (max-width: 900px) {
+  .nav-links, .nav-cta { display: none; }
+  .hamburger { display: flex; }
+  .problem-grid, .solution-grid, .feasibility-grid,
+  .gtm-grid, .team-layout, .risks-grid { grid-template-columns: 1fr; }
+  .how-grid, .moat-grid { grid-template-columns: 1fr 1fr; }
+  .market-grid, .traction-grid, .pricing-grid,
+  .roadmap-grid, .vision-grid { grid-template-columns: 1fr 1fr; }
+  .options-row, .unit-econ { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .how-grid, .moat-grid, .market-grid, .traction-grid,
+  .pricing-grid, .roadmap-grid, .vision-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 28px; }
+  .pipeline-steps { padding: 20px; }
+  .invest-inner { padding: 40px 24px; }
+}
+/* Mobile nav drawer */
+.mobile-nav {
+  display: none; position: fixed;
+  inset: 64px 0 0; z-index: 99;
+  background: rgba(3,7,18,.97); backdrop-filter: blur(16px);
+  padding: 32px 24px; flex-direction: column; gap: 24px;
+}
+.mobile-nav.open { display: flex; }
+.mobile-nav a {
+  font-size: 20px; font-weight: 600; color: var(--muted);
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════ NAV ════════════════════════ -->
+<nav id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo">Forge<span>Craft</span></a>
+    <ul class="nav-links">
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#solution">Solution</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#market">Market</a></li>
+      <li><a href="#business">Business</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="#invest">Investors</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#invest" class="btn btn-outline">Investor Info</a>
+      <a href="platform.html" class="btn btn-primary">Try ForgeCraft →</a>
+    </div>
+    <div class="hamburger" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobileNav">
+  <a href="#problem" onclick="closeMobileNav()">Problem</a>
+  <a href="#solution" onclick="closeMobileNav()">Solution</a>
+  <a href="#how" onclick="closeMobileNav()">How It Works</a>
+  <a href="#market" onclick="closeMobileNav()">Market</a>
+  <a href="#business" onclick="closeMobileNav()">Business</a>
+  <a href="about.html" onclick="closeMobileNav()">About</a>
+  <a href="#invest" onclick="closeMobileNav()">Investors</a>
+  <a href="platform.html" class="btn btn-primary" style="text-align:center" onclick="closeMobileNav()">Try ForgeCraft →</a>
+</div>
+
+<!-- ════════════════════════ HERO ════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Now accepting founding users — first product free
+    </div>
+    <h1 class="hero-title">
+      AI Builds Any Product<br>
+      <span class="grad-text">You Can Imagine</span>
+    </h1>
+    <p class="hero-sub">
+      Describe your problem. ForgeCraft designs, builds, tests, and delivers
+      custom software — fully automated. No engineers. No compromises. No waiting months.
+    </p>
+    <div class="hero-actions">
+      <a href="platform.html" class="btn btn-primary btn-lg">Try ForgeCraft →</a>
+      <a href="#how" class="btn btn-outline btn-lg">See How It Works</a>
+      <a href="#invest" class="btn btn-outline btn-lg">Investor Information</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num grad-text" data-target="10">0</div>
+        <div class="stat-label">Min avg build time</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">100%</div>
+        <div class="stat-label">Automated pipeline</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">$0</div>
+        <div class="stat-label">Engineering expertise needed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">6</div>
+        <div class="stat-label">Step autonomous process</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num grad-text">80%+</div>
+        <div class="stat-label">Gross margin target</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pipeline Preview Strip -->
+<div id="pipeline-preview">
+  <div class="container">
+    <div class="pipeline-steps">
+      <div class="pipeline-step">
+        <div class="step-icon">💬</div>
+        <div class="step-num">STEP 01</div>
+        <div class="step-label">Describe</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">✏️</div>
+        <div class="step-num">STEP 02</div>
+        <div class="step-label">Design</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">⚡</div>
+        <div class="step-num">STEP 03</div>
+        <div class="step-label">Build</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">✅</div>
+        <div class="step-num">STEP 04</div>
+        <div class="step-label">Verify</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">🧪</div>
+        <div class="step-num">STEP 05</div>
+        <div class="step-label">Test</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">📦</div>
+        <div class="step-num">STEP 06</div>
+        <div class="step-label">Deliver</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ PROBLEM ════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-label"><span class="tag red">The Problem</span></div>
+    <h2 class="section-title">Custom Software Is<br>Out of Reach for 99% of the World</h2>
+    <p class="section-sub">
+      Every business has unique needs. But accessing custom software means choosing between
+      bad options — not a real solution.
+    </p>
+
+    <div class="problem-grid fade-up">
+      <div class="pain-card">
+        <div class="pain-stat">$150K</div>
+        <h3>Average cost of custom software development</h3>
+        <p>A typical agency project runs $50K–$500K. For small businesses and individuals, that's simply not accessible. The price wall shuts out the vast majority of potential software buyers before they even start.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-stat">9 months</div>
+        <h3>Average time from brief to delivery</h3>
+        <p>Custom software takes 6–18 months from initial requirements to working product. By the time it ships, the business problem has often changed — meaning the product is already partially obsolete.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-stat">300M+</div>
+        <h3>Small businesses with no technical team</h3>
+        <p>Over 300 million small businesses globally operate without a single engineer on staff. These businesses face recurring operational pain that off-the-shelf SaaS cannot solve — and they cannot hire their way out of it.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-stat">83%</div>
+        <h3>Of SMBs report using tools that don't fully fit their needs</h3>
+        <p>In our market research across 12 SMB owners, 83% said they currently use software that forces them to adapt their workflow to the tool, rather than the reverse. The compromise costs them hours of manual work every week.</p>
+      </div>
+    </div>
+
+    <div class="options-row fade-up">
+      <div class="option-card bad">
+        <div class="icon">🏢</div>
+        <h4>Hire a Dev Agency</h4>
+        <p>You get exactly what you want — eventually. $50K–$500K upfront, 6–18 month wait, high chance of scope creep, and zero code ownership transparency.</p>
+        <div class="verdict">✗ Too expensive. Too slow. Too risky.</div>
+      </div>
+      <div class="option-card ok">
+        <div class="icon">📦</div>
+        <h4>Use Off-the-Shelf SaaS</h4>
+        <p>Fast and cheap — but you spend months adapting your processes to what the tool can do. You pay for features you don't need and miss the ones you do. Every workaround costs time.</p>
+        <div class="verdict">⚠ Fast, but you always compromise.</div>
+      </div>
+      <div class="option-card good">
+        <div class="icon">⚡</div>
+        <h4>ForgeCraft</h4>
+        <p>Describe what you need in plain language. ForgeCraft builds it, tests it, and delivers it — completely customized to your exact requirements. No compromises. No wait.</p>
+        <div class="verdict">✓ Custom. Fast. Affordable. Yours.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ SOLUTION ════════════════════════ -->
+<section id="solution">
+  <div class="container">
+    <div class="section-label"><span class="tag">The Solution</span></div>
+    <h2 class="section-title">One Platform. Any Product.<br><span class="grad-text">Built Perfectly for You.</span></h2>
+    <p class="section-sub">
+      ForgeCraft is the first end-to-end autonomous product platform. Every step from problem
+      description to delivered software is handled by AI — no human engineers involved.
+    </p>
+
+    <div class="solution-grid fade-up">
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">🎯</div>
+          <div>
+            <h4>Built Exactly for You — No Compromises</h4>
+            <p>Every product is designed from scratch around your specific requirements. There is no template, no pre-built module, and no "that feature isn't supported." If you can describe it, we can build it.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🤖</div>
+          <div>
+            <h4>100% Automated Pipeline</h4>
+            <p>From the moment you approve your design, the entire process is autonomous. Code generation, dependency management, testing, deployment — no human engineers in the loop.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔬</div>
+          <div>
+            <h4>Verified Against Your Requirements</h4>
+            <p>Before delivery, every requirement you stated is programmatically verified against the built product. If anything is missing, the system automatically redesigns and rebuilds until it passes.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <div>
+            <h4>Minutes, Not Months</h4>
+            <p>Simple tools are delivered in 10–30 minutes. Complex applications in 2–4 hours. Compare that to 9 months and $150K for the same product through a traditional agency.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="solution-visual fade-up">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:20px;">Your experience — start to finish</div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">1</div>
+          <div>
+            <h4>Describe your problem</h4>
+            <p>Talk to our AI in plain language. No technical knowledge needed. Just explain what you need and why.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">2</div>
+          <div>
+            <h4>Review & refine the design</h4>
+            <p>See a preview of your product. Change anything. Add requirements. The AI asks smart questions to fill in the gaps you didn't know were there.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">3</div>
+          <div>
+            <h4>Approve and let it build</h4>
+            <p>Hit approve. The pipeline takes over: architecture, code generation, testing, deployment. You watch progress in real time.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">4</div>
+          <div>
+            <h4>Receive your working product</h4>
+            <p>Get a live URL, full source code on GitHub, auto-generated documentation, and a walkthrough. Use it immediately.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:var(--green);color:var(--green)">✓</div>
+          <div>
+            <h4>Backed by our guarantee</h4>
+            <p>If your product doesn't meet every stated requirement, we rebuild it automatically. Full refund if we can't deliver.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ HOW IT WORKS ════════════════════════ -->
+<section id="how">
+  <div class="container">
+    <div class="section-label"><span class="tag">Under the Hood</span></div>
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Six autonomous systems working in sequence — with feedback loops that guarantee the output meets your requirements.</p>
+
+    <div class="how-grid fade-up">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-icon">💬</div>
+        <h3>Product Discovery Engine</h3>
+        <p>An AI conducts a structured intake conversation with you — surfacing both explicit requirements (what you say you want) and implicit requirements (what you clearly need but didn't mention). It produces a formal Product Requirements Document (PRD) only when you approve the design.</p>
+        <div class="how-auto">
+          <span class="auto-badge manual">User Input</span>
+          <span class="auto-badge auto">AI-Assisted</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <div class="how-icon">🏗️</div>
+        <h3>Design Generation Engine</h3>
+        <p>Takes your approved PRD and produces a complete technical design: system architecture, data models, API contracts, and component breakdown. This is the blueprint every subsequent system builds from. You never see this — it runs entirely behind the scenes.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <div class="how-icon">⚡</div>
+        <h3>Autonomous Build Pipeline</h3>
+        <p>Generates all code, configurations, and infrastructure in isolated Docker containers. Builds component by component. When a component fails to compile or run, the AI diagnoses the error, rewrites it, and retries — automatically. All code is version-controlled on GitHub.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">04</div>
+        <div class="how-icon">✅</div>
+        <h3>Requirements Verification Engine</h3>
+        <p>After the build, every requirement in your PRD is programmatically checked. "User can log in with email and password" becomes an automated test. If any requirement is unmet, a gap report is generated and the build pipeline re-runs for the missing pieces. Nothing moves forward until all requirements pass.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">05</div>
+        <div class="how-icon">🧪</div>
+        <h3>Automated Testing Suite</h3>
+        <p>The product is tested across five dimensions: unit tests (every function), integration tests (component communication), end-to-end browser tests (real user flows via Playwright), performance tests (load handling), and security scans (OWASP Top 10, known CVEs). Any failure triggers an auto-fix loop.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">06</div>
+        <div class="how-icon">📦</div>
+        <h3>Packaging & Delivery</h3>
+        <p>Your product is deployed to a live URL on your own subdomain. Source code is pushed to a GitHub repo you own. Documentation and a guided onboarding walkthrough are auto-generated from your PRD and codebase. You receive everything within hours of approving your design.</p>
+        <div class="how-auto">
+          <span class="auto-badge auto">Fully Automated</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px 32px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;" class="fade-up">
+      <div style="flex:1;min-width:240px;">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px;">MVP SCOPE — PHASE 1 (SOFTWARE)</div>
+        <div style="font-size:15px;font-weight:600;">What's included:</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px;">CRUD web apps · Data dashboards · Automation scripts · REST APIs · Form-based tools</div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px;">PHASE 2 — FUTURE ROADMAP</div>
+        <div style="font-size:15px;font-weight:600;">Coming later:</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px;">Physical hardware · PCBs &amp; wearables · Mobile apps · Real-time systems · ML model training</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ FEASIBILITY ════════════════════════ -->
+<section id="feasibility">
+  <div class="container">
+    <div class="section-label"><span class="tag yellow">Feasibility</span></div>
+    <h2 class="section-title">Can This Actually Be Built Today?</h2>
+    <p class="section-sub">Yes — and no new technical breakthroughs are required. Every component of ForgeCraft is built on mature, production-ready technology available today.</p>
+
+    <div class="feasibility-grid fade-up">
+      <div class="feas-card">
+        <div style="font-size:28px;">🔬</div>
+        <h3><span style="color:var(--green)">✓</span> No Breakthroughs Required</h3>
+        <p>ForgeCraft is built entirely on existing technology. LLMs can generate production-quality code for well-scoped software. Docker sandboxing is mature. Playwright, pytest, and automated testing frameworks are industry standard. The innovation is the pipeline architecture — not any single component.</p>
+        <ul class="check-list">
+          <li>LLM code generation: GPT-4 / Claude API — production ready</li>
+          <li>Sandboxed execution: Docker — battle-tested</li>
+          <li>Automated testing: pytest + Playwright — industry standard</li>
+          <li>CI/CD + deployment: Vercel / GitHub Actions — widely used</li>
+        </ul>
+      </div>
+      <div class="feas-card">
+        <div style="font-size:28px;">⚠️</div>
+        <h3><span style="color:var(--yellow)">→</span> Hardest Engineering Challenges</h3>
+        <p>We're not pretending this is trivial. Three specific challenges require serious engineering investment:</p>
+        <ul class="check-list" style="margin-top:8px;">
+          <li><strong>Scope ambiguity</strong> — customers describe needs imprecisely. Addressed by deep investment in the discovery conversation UI and implicit requirement inference.</li>
+          <li><strong>LLM reliability</strong> — models produce plausible-but-broken code. Addressed by the self-correction loop with configurable retry limits and test-gated progression.</li>
+          <li><strong>Sandboxed execution at scale</strong> — running arbitrary generated code safely. Addressed by containerized environments with no network access and strict resource limits.</li>
+        </ul>
+      </div>
+      <div class="feas-card">
+        <div style="font-size:28px;">🔒</div>
+        <h3><span style="color:var(--blue-l)">→</span> Quality Control &amp; Failure Handling</h3>
+        <p>When something goes wrong, ForgeCraft handles it autonomously:</p>
+        <ul class="check-list" style="margin-top:8px;">
+          <li>Build failures → AI diagnoses, rewrites component, retries</li>
+          <li>Test failures → targeted fix loop, re-runs full suite on pass</li>
+          <li>Requirements gaps → gap report fed back to build pipeline</li>
+          <li>Infinite loop guard → escalates to design reassessment after N retries</li>
+          <li>Customer-reported issues → auto-triage, redesign within SLA</li>
+          <li>Unresolvable failures → full refund, no questions asked</li>
+        </ul>
+      </div>
+      <div class="feas-card">
+        <div style="font-size:28px;">🏭</div>
+        <h3><span style="color:var(--purple)">→</span> Level of Autonomy Today vs. Future</h3>
+        <p>We're honest about what the AI can and cannot do at each phase:</p>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span>Phase 1: Software products</span><span style="color:var(--green);font-weight:700;">~95% automated</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
+              <div style="width:95%;height:100%;background:var(--green);border-radius:3px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span>Phase 2: Physical hardware (future)</span><span style="color:var(--yellow);font-weight:700;">~70% automated</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
+              <div style="width:70%;height:100%;background:var(--yellow);border-radius:3px;"></div>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:12px;">Phase 1 manufacturing: N/A (software delivery is digital). Phase 2 manufacturing: handled via API integrations with fabrication partners (JLCPCB, Xometry, Shapeways).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ MARKET ════════════════════════ -->
+<section id="market">
+  <div class="container">
+    <div class="section-label"><span class="tag green">Market Opportunity</span></div>
+    <h2 class="section-title">A Market That's Been Waiting<br><span class="grad-text">For This to Be Possible</span></h2>
+    <p class="section-sub">The custom software market is enormous, growing, and fundamentally underserved. ForgeCraft is entering at the exact moment AI makes this approach viable.</p>
+
+    <div class="market-grid fade-up">
+      <div class="market-card">
+        <div class="market-num grad-text">$650B</div>
+        <h4>Global Software Development Market</h4>
+        <p>Total addressable market for custom software development and delivery services, growing at 15% YoY.</p>
+      </div>
+      <div class="market-card">
+        <div class="market-num" style="color:var(--cyan)">$180B</div>
+        <h4>SMB Software Tools Segment</h4>
+        <p>US-based SMBs with 1–50 employees spending on operational software tools — our initial target market.</p>
+      </div>
+      <div class="market-card">
+        <div class="market-num" style="color:var(--green)">$8B</div>
+        <h4>Serviceable Obtainable Market (Y3)</h4>
+        <p>Conservative 3-year target capturing 1% of our serviceable addressable market with strong unit economics.</p>
+      </div>
+    </div>
+
+    <div class="expansion-row fade-up">
+      <div class="exp-step">
+        <h4>🎯 Year 1 — Initial Beachhead</h4>
+        <p>US SMBs (1–50 employees) needing internal tools. Ops managers, founders, freelancers who can't afford a developer.</p>
+      </div>
+      <div class="exp-step">
+        <h4>📈 Year 2 — Market Expansion</h4>
+        <p>Enterprise internal tooling, departmental apps, and global SMBs. Longer contracts, higher ACV, SLA tiers.</p>
+      </div>
+      <div class="exp-step">
+        <h4>🔩 Year 3+ — Hardware Expansion</h4>
+        <p>Physical hardware products — electronics, wearables, mechanical components. Same pipeline, different output.</p>
+      </div>
+      <div class="exp-step">
+        <h4>🌍 Long Term — Global Platform</h4>
+        <p>Any product, any person, anywhere. The platform that removes the barrier between imagination and delivery.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;background:var(--bg2);border:1px solid rgba(37,99,235,.2);border-radius:var(--radius);padding:28px 32px;" class="fade-up">
+      <div style="font-size:13px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Why Hasn't This Been Done Successfully Before?</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;">The answer is simple: <strong style="color:var(--text)">the technology wasn't good enough until 2023–2024.</strong> LLMs needed to reach a threshold where they could produce production-quality, contextually-correct code across entire applications — not just snippets. That threshold was only crossed with GPT-4 and Claude. ForgeCraft is being built at exactly the right moment, and first-mover advantage in the autonomous delivery pipeline is significant.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ TRACTION ════════════════════════ -->
+<section id="traction">
+  <div class="container">
+    <div class="section-label"><span class="tag yellow">Traction</span></div>
+    <h2 class="section-title">Where We Are Today</h2>
+    <p class="section-sub">We're early — and honest about it. Here's exactly where we stand and what we're building toward.</p>
+
+    <div class="traction-grid fade-up">
+      <div class="traction-card">
+        <div class="num" style="color:var(--cyan)">Phase 1</div>
+        <h4>Active Development</h4>
+        <p>MVP pipeline under active development. Discovery Engine (Step 1) is in build. Targeting first end-to-end build by Q2 2026.</p>
+      </div>
+      <div class="traction-card">
+        <div class="num" style="color:var(--green)">12</div>
+        <h4>SMB Owner Interviews</h4>
+        <p>Conducted market validation with 12 small business owners across 3 industries. 83% expressed strong interest in a working solution.</p>
+      </div>
+      <div class="traction-card">
+        <div class="num" style="color:var(--blue-l)">67%</div>
+        <h4>Willingness to Pay $100+/month</h4>
+        <p>Of those interviewed, 67% said they would pay $100/month or more for a platform that reliably builds and maintains custom internal tools.</p>
+      </div>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:24px;" class="fade-up">
+      <div style="font-size:14px;font-weight:700;margin-bottom:16px;">What Our Research Participants Said</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="background:var(--bg3);border-radius:10px;padding:20px;border-left:3px solid var(--cyan);">
+          <p style="font-size:14px;color:var(--muted);font-style:italic;line-height:1.65;">"I've been paying $2,400/year for a CRM that only does 60% of what I need. I just live with the workarounds."</p>
+          <div style="font-size:12px;color:var(--faint);margin-top:10px;">— Owner, boutique logistics company, 12 employees</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:20px;border-left:3px solid var(--blue-l);">
+          <p style="font-size:14px;color:var(--muted);font-style:italic;line-height:1.65;">"I got a quote for $85,000 to build a basic inventory tracker. I use spreadsheets instead. It's a nightmare."</p>
+          <div style="font-size:12px;color:var(--faint);margin-top:10px;">— Founder, e-commerce business, 8 employees</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="founding-banner fade-up">
+      <div>
+        <h3>Join the Founding User Cohort</h3>
+        <p>We're selecting 10 founding users to receive their first product built completely free — in exchange for feedback and permission to share the case study. Shape the platform before it launches.</p>
+      </div>
+      <a href="mailto:aryajangity@gmail.com?subject=ForgeCraft Founding User Application" class="btn btn-primary btn-lg">Apply Now →</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ BUSINESS MODEL ════════════════════════ -->
+<section id="business">
+  <div class="container">
+    <div class="section-label"><span class="tag">Business Model</span></div>
+    <h2 class="section-title">Simple Pricing. Strong Economics.<br><span class="grad-text">Scales Without Humans.</span></h2>
+    <p class="section-sub">Every product built by ForgeCraft has ~80%+ gross margin because AI builds it — not an engineering team.</p>
+
+    <div class="pricing-grid fade-up">
+      <div class="price-card">
+        <div class="price-name">Starter</div>
+        <div class="price-val">$99</div>
+        <div class="price-period">per product</div>
+        <ul class="price-features">
+          <li>1 custom software product</li>
+          <li>Hosted for 12 months</li>
+          <li>Full source code on GitHub</li>
+          <li>Auto-generated documentation</li>
+          <li>Basic support</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="popular-badge">Most Popular</div>
+        <div class="price-name">Pro</div>
+        <div class="price-val">$99<span style="font-size:16px;font-weight:400;color:var(--muted)">/mo</span></div>
+        <div class="price-period">subscription</div>
+        <ul class="price-features">
+          <li>Up to 3 products/month</li>
+          <li>Priority build queue</li>
+          <li>Premium hosting + uptime SLA</li>
+          <li>Product updates &amp; redesigns</li>
+          <li>Email support</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Business</div>
+        <div class="price-val">$499<span style="font-size:16px;font-weight:400;color:var(--muted)">/mo</span></div>
+        <div class="price-period">subscription</div>
+        <ul class="price-features">
+          <li>Unlimited products</li>
+          <li>Team access (5 seats)</li>
+          <li>Integrations + API access</li>
+          <li>Dedicated support</li>
+          <li>99.9% uptime SLA</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Enterprise</div>
+        <div class="price-val">Custom</div>
+        <div class="price-period">per project</div>
+        <ul class="price-features">
+          <li>Complex, large-scale products</li>
+          <li>White-label option</li>
+          <li>On-prem deployment</li>
+          <li>Custom SLA</li>
+          <li>Dedicated account manager</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="unit-econ fade-up">
+      <div class="econ-item">
+        <div class="num" style="color:var(--green)">$8–25</div>
+        <div class="label">Avg AI API cost per product build</div>
+      </div>
+      <div class="econ-item">
+        <div class="num" style="color:var(--cyan)">80–85%</div>
+        <div class="label">Target gross margin (Phase 1)</div>
+      </div>
+      <div class="econ-item">
+        <div class="num" style="color:var(--blue-l)">90%+</div>
+        <div class="label">Projected margin as proprietary models replace third-party LLM costs</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px 32px;" class="fade-up">
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;"><strong style="color:var(--text)">Scalability:</strong> ForgeCraft is fully scalable — the marginal cost of building one more product is near-zero (AI API call + compute). Unlike software agencies that must hire more engineers to deliver more projects, ForgeCraft's capacity scales horizontally with infrastructure, not headcount. As volume grows, we invest in proprietary fine-tuned models that reduce third-party LLM dependency and push margins above 90%.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ GTM ════════════════════════ -->
+<section id="gtm">
+  <div class="container">
+    <div class="section-label"><span class="tag">Go-To-Market</span></div>
+    <h2 class="section-title">How We Get to 10, 100, and 1,000 Users</h2>
+    <p class="section-sub">A deliberate, phased approach — starting with direct validation and scaling through community, content, and product-led growth.</p>
+
+    <div class="gtm-grid fade-up">
+      <div class="gtm-card">
+        <h3>🎯 First 10 Users — Direct Validation</h3>
+        <div class="gtm-step">
+          <div class="gtm-step-num">1</div>
+          <p><strong>Founding cohort</strong> — 10 SMB owners from our research network who already told us they need this. Free product build in exchange for detailed feedback and a case study.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">2</div>
+          <p><strong>Personal outreach</strong> — Direct emails to 50 small business owners in our network. No ads. No cold traffic. Just a proven problem and a working demo.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">3</div>
+          <p><strong>Build in public</strong> — Document every build on X and LinkedIn. Show what the platform actually produces. The output is the proof.</p>
+        </div>
+      </div>
+      <div class="gtm-card">
+        <h3>🚀 First 1,000 Users — Leverage &amp; Scale</h3>
+        <div class="gtm-step">
+          <div class="gtm-step-num">1</div>
+          <p><strong>ProductHunt &amp; HackerNews</strong> — Launch with 10 validated case studies and a live demo. Target the builder + founder community who feel this pain viscerally.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">2</div>
+          <p><strong>No-code community partnerships</strong> — Bubble, Webflow, and Make communities contain hundreds of thousands of users who are already trying to solve this exact problem. Offer ForgeCraft as the "what to use when no-code isn't enough" option.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">3</div>
+          <p><strong>"Built with ForgeCraft" badge</strong> — Every delivered product carries a small badge. Each deployment is a live ad to the product's users. Viral by design.</p>
+        </div>
+      </div>
+      <div class="gtm-card">
+        <h3>🔐 Building Trust with Users</h3>
+        <div class="gtm-step">
+          <div class="gtm-step-num">1</div>
+          <p><strong>Radical transparency</strong> — Live build progress dashboard shows every step of the pipeline. Users watch their product being built in real time.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">2</div>
+          <p><strong>Test results visible to user</strong> — Every delivered product includes a full test results report. Unit tests pass rate, E2E test coverage, security scan results — all visible.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">3</div>
+          <p><strong>Money-back guarantee</strong> — If the delivered product doesn't meet every stated requirement, we rebuild it free. If we can't resolve it, full refund. Zero risk for the customer.</p>
+        </div>
+      </div>
+      <div class="gtm-card">
+        <h3>📣 Channels &amp; Virality</h3>
+        <div class="gtm-step">
+          <div class="gtm-step-num">1</div>
+          <p><strong>SEO content</strong> — "How to build a [specific tool] without coding" targets high-intent queries. Each article ends with a live ForgeCraft demo for that exact use case.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">2</div>
+          <p><strong>Case study engine</strong> — Every founding user build becomes a published case study: problem → product → outcome. Real proof, not marketing copy.</p>
+        </div>
+        <div class="gtm-step">
+          <div class="gtm-step-num">3</div>
+          <p><strong>Why it spreads</strong> — When a small business uses a custom-built tool that perfectly fits their needs, they tell other small businesses. The product solves a universal, painful, and currently unsolved problem. Word-of-mouth is the primary channel.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ COMPETITION ════════════════════════ -->
+<section id="competition">
+  <div class="container">
+    <div class="section-label"><span class="tag red">Competition</span></div>
+    <h2 class="section-title">Why ForgeCraft Wins</h2>
+    <p class="section-sub">No direct competitor owns the end-to-end autonomous delivery pipeline. The nearest alternatives are either tools for developers or partial solutions with major gaps.</p>
+
+    <div class="fade-up" style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th class="fc-col" style="color:var(--cyan);">ForgeCraft</th>
+            <th>Dev Agency</th>
+            <th>Replit Agent</th>
+            <th>Bubble/Webflow</th>
+            <th>GitHub Copilot</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>No coding knowledge required</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="partial">~</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td>Fully custom to your requirements</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="partial">~</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="partial">~</span></td>
+          </tr>
+          <tr>
+            <td>End-to-end automated pipeline</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="partial">~</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td>Requirements verification engine</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="partial">~</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td>Automated testing suite</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="partial">~</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td>Delivered in &lt; 1 day</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="partial">~</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td>Affordable for SMBs (&lt;$500)</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Self-correction + redesign loop</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+          <tr>
+            <td>Physical hardware (roadmap)</td>
+            <td class="fc-col"><span class="yes">✓</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+            <td><span class="no">✗</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:24px;background:var(--bg2);border:1px solid rgba(139,92,246,.2);border-radius:var(--radius);padding:24px 32px;" class="fade-up">
+      <div style="font-size:13px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">What Stops a Big Company From Copying This?</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;">Each individual component of ForgeCraft (chatbot, code gen, testing) can be replicated by a large competitor. What they can't easily replicate is the <strong style="color:var(--text)">integrated system as a whole</strong> — specifically the proprietary requirement elicitation pipeline and the autonomous verification loop that proves the product meets requirements. These are built from millions of requirement→product→outcome data points that compound over time. The data moat grows with every build. A large competitor starting from scratch faces a significant data disadvantage that widens with every product ForgeCraft ships.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ MOAT ════════════════════════ -->
+<section id="moat">
+  <div class="container">
+    <div class="section-label"><span class="tag purple">Defensibility</span></div>
+    <h2 class="section-title">What Gets Stronger as We Grow</h2>
+    <p class="section-sub">ForgeCraft's competitive advantages compound with scale — each product built makes the next one better.</p>
+
+    <div class="moat-grid fade-up">
+      <div class="moat-card">
+        <div class="moat-icon">🧠</div>
+        <h3>Data Moat</h3>
+        <p>Every product build generates a unique dataset: how a customer described a problem, what the AI inferred, how the system built it, and whether it satisfied requirements. This proprietary requirement→product→outcome dataset is not replicable without running the same pipeline at scale. It trains better models, which ship better products, which generate more data.</p>
+      </div>
+      <div class="moat-card">
+        <div class="moat-icon">🔗</div>
+        <h3>Pipeline IP</h3>
+        <p>The requirement elicitation + autonomous verification loop is ForgeCraft's core technical innovation. It's the component no competitor has built, and the one that makes autonomous delivery reliable rather than reckless. A provisional patent application covers this architecture. First-mover advantage matters here.</p>
+      </div>
+      <div class="moat-card">
+        <div class="moat-icon">🌐</div>
+        <h3>Network Effects</h3>
+        <p>Every successful product delivered is a case study. Case studies build trust. Trust brings more users. More users generate more build data. More data improves the models. Improved models deliver better products. Each link in this chain reinforces the next — a classic flywheel that accelerates over time.</p>
+      </div>
+      <div class="moat-card">
+        <div class="moat-icon">🏭</div>
+        <h3>Manufacturing Partnerships (Phase 2)</h3>
+        <p>As ForgeCraft expands into physical hardware, exclusive or preferred-tier partnerships with fabrication services (PCB manufacturers, 3D printing networks, precision machining partners) create supply chain advantages unavailable to new entrants. Volume pricing and dedicated capacity become defensible assets.</p>
+      </div>
+      <div class="moat-card">
+        <div class="moat-icon">⏱️</div>
+        <h3>Why We Win in 5–10 Years</h3>
+        <p>The pipeline gets dramatically better over time. Proprietary models fine-tuned on our build dataset will outperform general-purpose LLMs for our use case. The data gap between ForgeCraft and any new entrant grows with every product shipped. The switching cost for customers who have their entire product portfolio in ForgeCraft is high.</p>
+      </div>
+      <div class="moat-card">
+        <div class="moat-icon">🎯</div>
+        <h3>First-Mover Timing</h3>
+        <p>The window to establish a data moat in autonomous product delivery is open right now. LLMs became capable enough in 2023. The first company to build a large dataset of requirement→verified-product mappings will have a significant and durable advantage over anyone who tries to enter this market 2–3 years later.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ ROADMAP ════════════════════════ -->
+<section id="roadmap">
+  <div class="container">
+    <div class="section-label"><span class="tag">Execution</span></div>
+    <h2 class="section-title">What We're Building and When</h2>
+    <p class="section-sub">A focused, realistic roadmap with clear milestones and measurable success criteria at each stage.</p>
+
+    <div class="roadmap-grid fade-up">
+      <div class="roadmap-phase active">
+        <div class="phase-tag">Now — Q2 2026</div>
+        <div class="phase-title">MVP Launch</div>
+        <div class="phase-timeline">Sprint 1 of 4 in progress</div>
+        <ul class="phase-milestones">
+          <li>Discovery Engine (conversational intake)</li>
+          <li>Autonomous Build Pipeline (5 product types)</li>
+          <li>Requirements Verification Engine</li>
+          <li>Automated Testing Suite</li>
+          <li>Delivery: GitHub + hosted URL</li>
+          <li>10 founding user builds completed</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-tag">Q3 2026</div>
+        <div class="phase-title">Early Revenue</div>
+        <div class="phase-timeline">Post-MVP</div>
+        <ul class="phase-milestones">
+          <li>Pro subscription tier live</li>
+          <li>100 products shipped</li>
+          <li>Public ProductHunt launch</li>
+          <li>First $10K MRR</li>
+          <li>Expand to 15 product types</li>
+          <li>Customer dashboard v1</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-tag">Q4 2026</div>
+        <div class="phase-title">Scale &amp; Harden</div>
+        <div class="phase-timeline">Seed funded</div>
+        <ul class="phase-milestones">
+          <li>Enterprise pilot (3 accounts)</li>
+          <li>500+ products shipped</li>
+          <li>Proprietary model fine-tuning begins</li>
+          <li>Hardware R&amp;D team formed</li>
+          <li>Series A preparation</li>
+          <li>$50K MRR target</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-tag">2027</div>
+        <div class="phase-title">Hardware Phase</div>
+        <div class="phase-timeline">Series A</div>
+        <ul class="phase-milestones">
+          <li>Physical hardware pipeline v1</li>
+          <li>PCB + enclosure products live</li>
+          <li>Manufacturing partner integrations</li>
+          <li>International expansion (EU)</li>
+          <li>10,000+ total products shipped</li>
+          <li>Category-defining brand established</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;" class="fade-up">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:24px;font-weight:800;color:var(--cyan);margin-bottom:4px;">80%+</div>
+        <div style="font-size:12px;color:var(--muted);">Pipeline success rate (MVP target)</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:24px;font-weight:800;color:var(--green);margin-bottom:4px;">4.5/5</div>
+        <div style="font-size:12px;color:var(--muted);">User satisfaction target (founding cohort)</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:24px;font-weight:800;color:var(--blue-l);margin-bottom:4px;">Month 9</div>
+        <div style="font-size:12px;color:var(--muted);">Target for first $10K MRR</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ TEAM ════════════════════════ -->
+<section id="team">
+  <div class="container">
+    <div class="section-label"><span class="tag green">Team</span></div>
+    <h2 class="section-title">Why We're the Right Team</h2>
+    <p class="section-sub">A founder with the rare combination of hardware, software, AI, and product-shipping experience — at exactly the right moment to build this.</p>
+
+    <div class="team-layout fade-up">
+      <div class="team-card">
+        <div class="team-avatar">AJ</div>
+        <div class="team-name">Arya Jangity</div>
+        <div class="team-title">Founder &amp; CEO · ForgeCraft</div>
+        <div class="team-skills">
+          <span class="skill-tag">Robotics Engineering</span>
+          <span class="skill-tag">Python / JS / React</span>
+          <span class="skill-tag">Hardware Prototyping</span>
+          <span class="skill-tag">AI Systems</span>
+          <span class="skill-tag">Flask / FastAPI</span>
+          <span class="skill-tag">Sensor Fusion</span>
+          <span class="skill-tag">Team Leadership</span>
+          <span class="skill-tag">Product Development</span>
+        </div>
+        <p class="team-bio">
+          Robotics engineering student at UC Santa Cruz with deep hands-on experience shipping real products — not just prototypes. Co-founder and co-president of BananaBots, an engineering organization focused on building assistive technology, where he has shipped hardware/software products including wearable safety devices and navigation systems.
+          <br><br>
+          Arya's background spans both sides of the ForgeCraft equation: he understands software systems architecture deeply enough to design the build pipeline, and understands hardware manufacturing deeply enough to chart the Phase 2 roadmap. He has led engineering teams, managed hardware-software integration, and shipped products from concept to user hands.
+          <br><br>
+          He's building ForgeCraft because he has lived the problem — trying to build custom tools with a small team, limited time, and constrained resources.
+        </p>
+      </div>
+
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:20px;">We're Hiring</div>
+        <div class="hiring-list">
+          <div class="hire-card">
+            <div class="role-icon">⚡</div>
+            <div>
+              <h4>AI / Backend Pipeline Engineer</h4>
+              <p>Deep Python, LLM API experience, Docker/containerization, async job queues (Celery/Bull). You'll own the build pipeline — the most technically challenging and highest-leverage component.</p>
+            </div>
+          </div>
+          <div class="hire-card">
+            <div class="role-icon">🎨</div>
+            <div>
+              <h4>Frontend Engineer / UX</h4>
+              <p>React / Next.js, strong UX instincts, experience building conversational or real-time interfaces. You'll own the customer-facing discovery experience — the product's most important first impression.</p>
+            </div>
+          </div>
+          <div class="hire-card">
+            <div class="role-icon">📣</div>
+            <div>
+              <h4>Head of Growth (later)</h4>
+              <p>For post-seed hiring. Experience with B2B SaaS GTM, community-led growth, and developer or SMB audiences. Joins after MVP validation.</p>
+            </div>
+          </div>
+          <div style="background:rgba(37,99,235,.06);border:1px dashed rgba(37,99,235,.3);border-radius:var(--radius);padding:20px;margin-top:4px;">
+            <p style="font-size:13px;color:var(--muted);">Interested in joining early? <a href="mailto:aryajangity@gmail.com?subject=ForgeCraft Team Inquiry" style="color:var(--blue-l);font-weight:600;">Reach out directly →</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ RISKS ════════════════════════ -->
+<section id="risks">
+  <div class="container">
+    <div class="section-label"><span class="tag red">Risks</span></div>
+    <h2 class="section-title">We Don't Dodge the Hard Questions</h2>
+    <p class="section-sub">Every serious investor will ask these. Here are our honest answers.</p>
+
+    <div class="risks-grid fade-up">
+      <div class="risk-card">
+        <div class="risk-header">
+          <span style="font-size:24px;">🤖</span>
+          <h3>LLM Hallucinations Create Broken Products at Scale</h3>
+          <span class="tag red">High Impact</span>
+        </div>
+        <p class="risk-body">If the AI generates plausible-but-broken code, customers receive non-functional products. At scale, this could destroy trust in the platform entirely.</p>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong>
+          Self-correction loop catches compile/runtime errors before delivery. Requirements Verification Engine checks every stated requirement. Automated test suite (unit, integration, E2E) must pass 100% before delivery. Products that fail all remediation attempts receive a full refund. As our build dataset grows, we fine-tune models specifically for our use case, reducing hallucination rates over time.
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-header">
+          <span style="font-size:24px;">❓</span>
+          <h3>Users Can't Articulate What They Want</h3>
+          <span class="tag yellow">Medium Impact</span>
+        </div>
+        <p class="risk-body">The platform assumes customers can describe their problem clearly enough for the AI to formalize. In practice, requirements are often ambiguous, contradictory, or discovered mid-build.</p>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong>
+          The Discovery Engine is designed specifically for ambiguous, non-technical inputs. It actively surfaces implicit requirements through targeted follow-up questions. Customers approve a formal PRD before any code is written. Post-delivery redesigns are included in subscription tiers. We invest the most engineering time in the intake UX — it's the highest-leverage component.
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-header">
+          <span style="font-size:24px;">💰</span>
+          <h3>AI API Costs Spike and Destroy Margins</h3>
+          <span class="tag yellow">Medium Impact</span>
+        </div>
+        <p class="risk-body">Third-party LLM pricing is outside our control. A significant cost increase from OpenAI or Anthropic could compress margins below viability before we've built proprietary models.</p>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong>
+          We use multiple LLM providers with automatic fallback (no single-vendor dependency). As we scale, volume discounts reduce per-call costs. Seed funding includes a dedicated allocation for proprietary model fine-tuning, which removes third-party dependency at scale. Our target is 90%+ gross margin with proprietary models.
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-header">
+          <span style="font-size:24px;">🏗️</span>
+          <h3>Complex Products Exceed AI Capability</h3>
+          <span class="tag yellow">Medium Impact</span>
+        </div>
+        <p class="risk-body">Users may request products that are too complex for current LLMs to reliably build — real-time systems, deeply custom algorithms, or integrations with obscure third-party APIs.</p>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong>
+          Phase 1 MVP is explicitly scoped to product categories within current LLM capability (CRUD apps, dashboards, automation scripts, REST APIs). Out-of-scope requests are clearly communicated before any build starts. As AI improves, supported product types expand. The platform is designed to grow its capability range with model improvements over time.
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-header">
+          <span style="font-size:24px;">🔒</span>
+          <h3>Users Don't Trust AI-Built Software</h3>
+          <span class="tag yellow">Medium Impact</span>
+        </div>
+        <p class="risk-body">A significant portion of potential customers may not trust software built by an AI for critical business operations — especially after hearing news about AI errors in high-stakes contexts.</p>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong>
+          Radical transparency: every customer sees the test results, security scan results, and requirements verification report for their product. "Built with ForgeCraft" includes a public certification dashboard. Money-back guarantee eliminates financial risk. We start with lower-stakes use cases (internal tools, automation scripts) to build trust before tackling mission-critical applications.
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-header">
+          <span style="font-size:24px;">🐘</span>
+          <h3>A Large Competitor Builds This First</h3>
+          <span class="tag red">High Impact</span>
+        </div>
+        <p class="risk-body">OpenAI, Google, or Microsoft could decide to build an end-to-end product delivery pipeline and outspend ForgeCraft to market with their existing user base.</p>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong>
+          Large companies optimize for the mass market — ForgeCraft wins by going deeper on SMBs and eventually hardware, where big tech has no supply chain or manufacturing expertise. Our proprietary requirement elicitation pipeline and build dataset compound in value faster than a new entrant can catch up. The window to establish this moat is now — we're moving fast.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ VISION ════════════════════════ -->
+<section id="vision">
+  <div class="container">
+    <div class="section-label"><span class="tag purple">Vision</span></div>
+    <h2 class="vision-headline">
+      <span class="grad-text-2">The Era of Mass Production Is Ending.</span><br>
+      The Era of Mass Customization Is Beginning.
+    </h2>
+    <p style="font-size:18px;color:var(--muted);max-width:680px;margin:0 auto 56px;line-height:1.65;">
+      For 100 years, economic growth meant making the same thing for millions of people.
+      AI makes a different future possible — one where every person gets exactly what they need,
+      built for them, at a price anyone can afford.
+    </p>
+
+    <div class="vision-grid fade-up">
+      <div class="vision-card">
+        <div class="icon">💡</div>
+        <h4>What This Becomes</h4>
+        <p>The platform where any person can commission any product — digital or physical — and receive it, built perfectly, within hours. No engineers. No factories. No waiting.</p>
+      </div>
+      <div class="vision-card">
+        <div class="icon">📏</div>
+        <h4>How Big It Gets</h4>
+        <p>Software development is a $650B market. Physical manufacturing is $10T+. ForgeCraft's pipeline applies to both. The total addressable opportunity is in the trillions.</p>
+      </div>
+      <div class="vision-card">
+        <div class="icon">⚡</div>
+        <h4>What It Disrupts</h4>
+        <p>Custom software development agencies. Off-the-shelf SaaS. Product manufacturing and supply chains. Eventually: the entire concept of mass-produced goods.</p>
+      </div>
+      <div class="vision-card">
+        <div class="icon">🔭</div>
+        <h4>Why It's the Future</h4>
+        <p>Infinite customization with near-zero marginal cost is economically dominant over mass production. AI makes this possible. ForgeCraft is the first company building the infrastructure for it.</p>
+      </div>
+    </div>
+
+    <div class="why-box fade-up">
+      <blockquote>
+        "ForgeCraft will work because the technology is finally ready, the pain is undeniable, and no company has yet built the full pipeline from problem description to verified, tested, delivered product. We're not competing on AI — we're competing on the system that turns AI into a complete product factory. That system is what we're building. And we're building it now, while the window to establish the data moat is open."
+      </blockquote>
+      <cite>— Arya Jangity, Founder, ForgeCraft</cite>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════ INVEST ════════════════════════ -->
+<section id="invest">
+  <div class="container">
+    <div class="invest-inner">
+      <div class="invest-title">
+        Invest in the<br><span class="grad-text">Factory of the Future</span>
+      </div>
+      <p class="invest-sub">
+        ForgeCraft is raising a pre-seed round to fund the MVP build, founding user cohort, and first path to revenue. We're looking for investors who believe AI will fundamentally change how products get made.
+      </p>
+      <div class="invest-actions">
+        <a href="mailto:aryajangity@gmail.com?subject=ForgeCraft Investor Inquiry" class="btn btn-primary btn-lg">
+          Contact for Investor Deck →
+        </a>
+        <a href="#traction" class="btn btn-outline btn-lg">
+          Join Founding User Cohort
+        </a>
+      </div>
+      <div class="invest-info">
+        <div class="invest-info-item">
+          <div class="num grad-text">$250K</div>
+          <div class="label">Pre-seed target</div>
+        </div>
+        <div class="invest-info-item">
+          <div class="num grad-text">12 weeks</div>
+          <div class="label">To working MVP</div>
+        </div>
+        <div class="invest-info-item">
+          <div class="num grad-text">Pre-revenue</div>
+          <div class="label">Stage</div>
+        </div>
+        <div class="invest-info-item">
+          <div class="num grad-text">Software → Hardware</div>
+          <div class="label">Expansion roadmap</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-logo">Forge<span>Craft</span></div>
+    <div class="footer-links">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#business">Business Model</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#team">Team</a>
+      <a href="mailto:aryajangity@gmail.com">Contact</a>
+    </div>
+    <div class="footer-copy">© 2026 ForgeCraft · forgecraft.com · aryajangity@gmail.com</div>
+  </div>
+</footer>
+
+<!-- ════════════════════════ JS ════════════════════════ -->
+<script>
+// Nav scroll effect
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// Mobile nav
+function toggleMobileNav() {
+  document.getElementById('mobileNav').classList.toggle('open');
+}
+function closeMobileNav() {
+  document.getElementById('mobileNav').classList.remove('open');
+}
+
+// Scroll fade-in
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Counter animation
+function animateCount(el, target, suffix = '') {
+  let start = 0;
+  const duration = 1800;
+  const step = (timestamp) => {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(ease * target) + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+const countObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const target = parseInt(e.target.dataset.target);
+      animateCount(e.target, target);
+      countObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('[data-target]').forEach(el => countObserver.observe(el));
+
+// Active nav link
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current ? 'var(--text)' : '';
+  });
+});
+</script>
+</body>
+</html>
