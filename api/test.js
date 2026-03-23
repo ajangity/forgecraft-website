@@ -64,13 +64,13 @@ REQUIREMENTS:
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
+  const apiKey = req.headers['x-api-key'] || process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(401).json({ error: 'No API key provided. Enter your Anthropic API key in the platform.' });
 
   const { schematic, build_result, is_software } = req.body;
   if (!schematic) return res.status(400).json({ error: 'Missing schematic' });
