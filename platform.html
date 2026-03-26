@@ -229,30 +229,7 @@ pre code{background:none;padding:0}
       <div class="auth-error" id="auth-error"></div>
     </div>
 
-    <!-- Step 2: Connect AI key (shown after Google auth if no key saved) -->
-    <div class="auth-step" id="auth-step-apikey" style="display:none">
-      <div class="auth-step-heading">Connect your AI provider</div>
-      <div class="auth-step-desc">ForgeCraft uses your own API key so you're never billed through us. Pick a provider and paste your key — it's saved to your account.</div>
-      <div class="auth-field">
-        <label>AI Provider</label>
-        <select class="auth-select" id="setup-provider" onchange="updateSetupHint()">
-          <option value="">— Choose provider —</option>
-          <option value="anthropic">Anthropic (Claude)</option>
-          <option value="openai">OpenAI (GPT-4o)</option>
-          <option value="google">Google AI Studio (Gemini)</option>
-        </select>
-      </div>
-      <div class="auth-field">
-        <label>API Key</label>
-        <div class="auth-input-wrap">
-          <input class="auth-input" id="setup-apikey" type="password" placeholder="Paste your key here" autocomplete="off" spellcheck="false">
-          <button class="auth-eye" onclick="toggleVis('setup-apikey')" title="Show/hide">&#x1F441;</button>
-        </div>
-        <div class="auth-hint" id="setup-hint">Stored encrypted in your account — never shared.</div>
-      </div>
-      <button class="auth-submit" id="setup-btn" onclick="saveApiKey()">Save &amp; Start Building &#x26A1;</button>
-      <div class="auth-error" id="setup-error"></div>
-    </div>
+    <!-- Step 2 removed: AI key no longer required — ForgeCraft handles it server-side -->
 
     <!-- Loading -->
     <div class="auth-loading" id="auth-loading" style="display:none">
@@ -357,7 +334,7 @@ pre code{background:none;padding:0}
 <script>
 mermaid.initialize({startOnLoad:false,theme:'dark',themeVariables:{primaryColor:'#3b82f6',primaryTextColor:'#e2e8f0',primaryBorderColor:'#1e40af',lineColor:'#475569',secondaryColor:'#8b5cf6',tertiaryColor:'#141428',background:'#07070f',mainBkg:'#141428',nodeBorder:'#1e40af',clusterBkg:'#0e0e1c',titleColor:'#e2e8f0',edgeLabelBackground:'#141428'}});
 
-let history=[],phase='discovery',busy=false,mmdN=0,curSch=null,curBuild=null,__apiKey='',__provider='anthropic',__user=null;
+let history=[],phase='discovery',busy=false,mmdN=0,curSch=null,curBuild=null,__sessionToken='',__user=null;
 const $=id=>document.getElementById(id);
 const phaseIdx={discovery:0,proposal:1,schematic:2,build:3,test:4};
 const phaseProgress={discovery:5,proposal:28,schematic:55,build:78,test:100};
@@ -390,7 +367,9 @@ async function callChat(){
   busy=true;$('sbtn').disabled=true;
   $('typing').classList.remove('typing-hide');scroll();
   try{
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':__apiKey,'X-Provider':__provider},body:JSON.stringify({messages:history})});
+    const { data:{ session:cs } } = await _sb.auth.getSession();
+    __sessionToken = cs?.access_token || __sessionToken;
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},body:JSON.stringify({messages:history})});
     if(!r.ok){const err=await r.json().catch(()=>({}));if(r.status===401){showAuthOverlay();throw new Error('auth');}throw new Error('HTTP '+r.status);}
     const data=await r.json();
     $('typing').classList.add('typing-hide');
@@ -398,7 +377,7 @@ async function callChat(){
     history.push({role:'assistant',content:JSON.stringify(data)});
   }catch(e){
     $('typing').classList.add('typing-hide');
-    if(e.message!=='auth')addMsg('ai','Connection error. Check your API key or try again.');
+    if(e.message!=='auth')addMsg('ai','Connection error. Please try again.');
     console.error(e);
   }finally{busy=false;$('sbtn').disabled=false;scroll()}
 }
@@ -555,7 +534,7 @@ async function triggerBuild(){
   setPhase('build');
   const summary=history.filter(m=>m.role==='user').map(m=>m.content).join('\n');
   try{
-    const r=await fetch('/api/build',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':__apiKey,'X-Provider':__provider},
+    const r=await fetch('/api/build',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},
       body:JSON.stringify({schematic:curSch,conversation_summary:summary})});
     if(!r.ok)throw new Error('Build failed '+r.status);
     curBuild=await r.json();
@@ -634,7 +613,7 @@ async function triggerTest(){
   addMsg('ai','&#x1F9EA; Generating comprehensive testing strategy and runnable test code...');
   setPhase('test');
   try{
-    const r=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':__apiKey,'X-Provider':__provider},
+    const r=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},
       body:JSON.stringify({schematic:curSch,build_result:curBuild,is_software:curSch.is_software!==false})});
     if(!r.ok)throw new Error('Test gen failed '+r.status);
     const data=await r.json();
@@ -849,7 +828,7 @@ function updateNavUser(supaUser){
 // ── Logout ────────────────────────────────────────────────────────────────────
 async function logout(){
   await _sb.auth.signOut();
-  __user=null; __apiKey=''; __provider='anthropic';
+  __user=null; __sessionToken='';
   $('nav-user').style.display='none';
   history=[]; phase='discovery'; curSch=null; curBuild=null;
   $('welcome').classList.remove('gone');
@@ -872,30 +851,21 @@ async function logout(){
 
   setAuthLoading('Loading your profile…');
 
-  // Load profile from Supabase
-  const { data: profile, error } = await _sb
+  // Load profile from Supabase (optional — for display name/picture)
+  const { data: profile } = await _sb
     .from('profiles')
-    .select('api_key, ai_provider, display_name, picture')
+    .select('display_name, picture')
     .eq('id', session.user.id)
     .single();
 
-  if(error && error.code !== 'PGRST116'){
-    // PGRST116 = row not found (new user, trigger may not have fired yet)
-    showAuthStep('signin');
-    $('auth-error').textContent = 'Could not load profile. Please try again.';
-    return;
-  }
-
-  if(!profile?.api_key){
-    // Authenticated but no API key saved yet — show setup screen
-    showAuthStep('apikey');
-    return;
-  }
-
-  // All good — load state and unlock platform
-  __apiKey   = profile.api_key;
-  __provider = profile.ai_provider || 'anthropic';
-  __user     = { id: session.user.id, email: session.user.email, display_name: profile.display_name, picture: profile.picture };
+  // Store session token for API calls
+  __sessionToken = session.access_token;
+  __user = {
+    id: session.user.id,
+    email: session.user.email,
+    display_name: profile?.display_name || session.user.user_metadata?.full_name,
+    picture: profile?.picture || session.user.user_metadata?.avatar_url
+  };
 
   hideAuthOverlay();
   updateNavUser(session.user);

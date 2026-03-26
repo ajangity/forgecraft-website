@@ -133,16 +133,33 @@ RULES:
 - For software products: be optimistic about what can be built, since ForgeCraft will actually code it.
 - Mermaid diagrams: only use valid Mermaid syntax. Use graph TD or flowchart TD direction.`;
 
+const SUPABASE_URL = 'https://iwouaznczwhojuvmignr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b3Vhem5jendob2p1dm1pZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDQzNTAsImV4cCI6MjA4OTk4MDM1MH0.FJ4hUYMGLkmiYcjYp8NnfsrtD-hHI8U59uYBWTtrEko';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = req.headers['x-api-key'] || process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(401).json({ error: 'No API key provided. Enter your Anthropic API key in the platform.' });
+  // Verify the user is authenticated with Supabase
+  const authHeader = req.headers['authorization'];
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+  }
+  const userToken = authHeader.replace('Bearer ', '');
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { 'Authorization': `Bearer ${userToken}`, 'apikey': SUPABASE_ANON_KEY }
+  });
+  if (!userRes.ok) {
+    return res.status(401).json({ error: 'Session expired. Please sign in again.' });
+  }
+
+  // Use ForgeCraft's server-side API key
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'AI service not configured.' });
 
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Invalid request body' });
