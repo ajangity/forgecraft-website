@@ -157,33 +157,44 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Session expired. Please sign in again.' });
   }
 
-  // Use ForgeCraft's server-side API key
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  // Use ForgeCraft's server-side Gemini API key (free tier)
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(503).json({ error: 'AI service not configured.' });
 
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Invalid request body' });
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4096,
-        system: SYSTEM_PROMPT,
-        messages
-      })
-    });
+    // Convert messages to Gemini format (role: "user" | "model")
+    const geminiContents = messages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }]
+    }));
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: geminiContents,
+          generationConfig: {
+            maxOutputTokens: 4096,
+            temperature: 0.7
+          }
+        })
+      }
+    );
 
     const raw = await response.json();
-    if (!response.ok) return res.status(500).json({ error: raw.error?.message || 'AI service error' });
+    if (!response.ok) {
+      console.error('Gemini error:', JSON.stringify(raw));
+      return res.status(500).json({ error: raw.error?.message || 'AI service error' });
+    }
 
-    const text = raw.content[0].text;
+    const text = raw.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) return res.status(500).json({ error: 'Empty response from AI' });
 
     let parsed;
     try {
