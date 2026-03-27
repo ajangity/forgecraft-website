@@ -168,12 +168,58 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Session expired. Please sign in again.' });
   }
 
-  // Use ForgeCraft's server-side Gemini API key (free tier)
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(503).json({ error: 'AI service not configured.' });
-
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Invalid request body' });
+
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
+
+  // ── Primary: Claude Haiku (fast + affordable for discovery chat) ──────────
+  if (anthropicKey) {
+    try {
+      // Convert messages to Anthropic format (role: "user" | "assistant")
+      const anthropicMessages = messages.map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
+      }));
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 4096,
+          system: SYSTEM_PROMPT,
+          messages: anthropicMessages
+        })
+      });
+
+      const raw = await response.json();
+      if (!response.ok) {
+        console.error('Anthropic chat error:', raw.error?.message);
+        // Fall through to Gemini fallback
+      } else {
+        const text = raw.content?.[0]?.text;
+        if (text) {
+          const parsed = extractJSON(text);
+          if (parsed) return res.json(parsed);
+          // If JSON parse fails, return as message
+          return res.json({ type: 'message', content: text });
+        }
+      }
+    } catch (err) {
+      console.error('Anthropic chat call failed, falling back to Gemini:', err.message);
+    }
+  }
+
+  // ── Fallback: Gemini 2.5 Flash ───────────────────────────────────────────
+  if (!geminiKey) {
+    return res.status(503).json({ error: 'AI service not configured.' });
+  }
 
   try {
     // Convert messages to Gemini format (role: "user" | "model")
@@ -183,7 +229,7 @@ export default async function handler(req, res) {
     }));
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -195,7 +241,6 @@ export default async function handler(req, res) {
             temperature: 0.7,
             responseMimeType: 'application/json',
             // Disable thinking tokens — not needed for structured JSON responses
-            // and avoids parts[0] being a thought instead of the actual response
             thinkingConfig: { thinkingBudget: 0 }
           }
         })
@@ -203,32 +248,42 @@ export default async function handler(req, res) {
     );
 
     const raw = await response.json();
+
+    // Detect quota/rate limit errors and surface helpful message
     if (!response.ok) {
+      const errMsg = raw.error?.message || '';
+      const isQuota = response.status === 429 || errMsg.toLowerCase().includes('quota') || errMsg.toLowerCase().includes('rate');
       console.error('Gemini error:', JSON.stringify(raw));
+      if (isQuota) {
+        return res.status(429).json({
+          error: 'Daily AI limit reached. Quota resets at midnight Pacific time — try again then, or contact ForgeCraft support.'
+        });
+      }
       return res.status(500).json({ error: raw.error?.message || 'AI service error' });
     }
 
-    // Gemini 2.5 Flash with thinking enabled returns parts with thought:true first.
-    // Skip thought parts and find the actual text response.
+    // Skip thought parts and find the actual text response
     const parts = raw.candidates?.[0]?.content?.parts || [];
     const responsePart = parts.find(p => !p.thought && p.text) || parts[0];
     const text = responsePart?.text;
     if (!text) return res.status(500).json({ error: 'Empty response from AI' });
 
-    let parsed;
-    try {
-      // With responseMimeType:'application/json', Gemini returns clean JSON directly.
-      // Fallback regex handles edge cases.
-      const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/);
-      const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text;
-      parsed = JSON.parse(jsonStr);
-    } catch {
-      parsed = { type: 'message', content: text };
-    }
+    const parsed = extractJSON(text);
+    if (parsed) return res.json(parsed);
+    return res.json({ type: 'message', content: text });
 
-    res.json(parsed);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+function extractJSON(text) {
+  try {
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/);
+    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text;
+    return JSON.parse(jsonStr);
+  } catch {
+    return null;
   }
 }
