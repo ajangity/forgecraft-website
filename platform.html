@@ -334,7 +334,7 @@ pre code{background:none;padding:0}
 <script>
 mermaid.initialize({startOnLoad:false,theme:'dark',themeVariables:{primaryColor:'#3b82f6',primaryTextColor:'#e2e8f0',primaryBorderColor:'#1e40af',lineColor:'#475569',secondaryColor:'#8b5cf6',tertiaryColor:'#141428',background:'#07070f',mainBkg:'#141428',nodeBorder:'#1e40af',clusterBkg:'#0e0e1c',titleColor:'#e2e8f0',edgeLabelBackground:'#141428'}});
 
-let history=[],phase='discovery',busy=false,mmdN=0,curSch=null,curBuild=null,__sessionToken='',__user=null;
+let history=[],phase='discovery',busy=false,mmdN=0,curSch=null,curBuild=null,curProp=null,__sessionToken='',__user=null;
 const $=id=>document.getElementById(id);
 const phaseIdx={discovery:0,proposal:1,schematic:2,build:3,test:4};
 const phaseProgress={discovery:5,proposal:28,schematic:55,build:78,test:100};
@@ -386,7 +386,7 @@ function handleResp(d){
   switch(d.type){
     case 'question':case'message':addMsg('ai',d.content);break;
     case 'proposal':
-      addMsg('ai',d.content);if(d.data)addProposal(d.data);
+      addMsg('ai',d.content);if(d.data){curProp=d.data;addProposal(d.data);}
       setPhase('proposal');break;
     case 'schematic':
       addMsg('ai',d.content);
@@ -423,7 +423,36 @@ async function confirmProp(yes,btn){
   btn.closest('.p-btns').querySelectorAll('button').forEach(b=>b.disabled=true);
   const text=yes?'Yes! Build the full schematic for this.':'Not quite right — let me explain what\'s missing.';
   addMsg('user',text);history.push({role:'user',content:text});
-  await callChat();
+  if(yes && curProp){
+    // Route schematic generation to the powerful model endpoint (Claude claude-opus-4-6 → Gemini fallback)
+    await callSchematic();
+  } else {
+    await callChat();
+  }
+}
+
+async function callSchematic(){
+  busy=true;$('sbtn').disabled=true;
+  $('typing').classList.remove('typing-hide');scroll();
+  addMsg('ai','Designing your full technical schematic with our most powerful AI… this may take 15–30 seconds. ⚙️');
+  try{
+    const { data:{ session:cs } } = await _sb.auth.getSession();
+    __sessionToken = cs?.access_token || __sessionToken;
+    // Build a short summary of the conversation for context
+    const summary = history.filter(m=>m.role==='user').map(m=>m.content).join(' | ');
+    const r=await fetch('/api/schematic',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},
+      body:JSON.stringify({proposal:curProp, conversation_summary:summary})});
+    $('typing').classList.add('typing-hide');
+    if(!r.ok){const err=await r.json().catch(()=>({}));addMsg('ai','Schematic generation failed: '+(err.error||'Unknown error'));return;}
+    const data=await r.json();
+    if(data){curSch=data;renderSch(data);setPhase('schematic');}
+    // Also add a brief message in chat
+    addMsg('ai',`✅ Schematic complete for **${data.product_name}**! Review the technical design in the panel →`);
+  }catch(e){
+    $('typing').classList.add('typing-hide');
+    addMsg('ai','Connection error generating schematic. Please try again.');
+    console.error(e);
+  }finally{busy=false;$('sbtn').disabled=false;scroll()}
 }
 
 // ─── SCHEMATIC ────────────────────────────────────────────────────────────────
@@ -614,7 +643,7 @@ async function triggerTest(){
   setPhase('test');
   try{
     const r=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},
-      body:JSON.stringify({schematic:curSch,build_result:curBuild,is_software:curSch.is_software!==false})});
+      body:JSON.stringify({schematic:curSch,build_result:curBuild,is_software:curSch.is_software!==false,usage_scenarios:curProp?.usage_scenarios||[]})});
     if(!r.ok)throw new Error('Test gen failed '+r.status);
     const data=await r.json();
     renderTests(data);

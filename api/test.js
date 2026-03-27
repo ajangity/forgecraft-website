@@ -1,9 +1,32 @@
-const TEST_SYSTEM_PROMPT = `You are ForgeCraft's QA and testing expert. Given a product spec and its built artifact, you generate comprehensive testing strategies and actual test code.
+const TEST_SYSTEM_PROMPT = `You are ForgeCraft's QA and testing expert. Given a product spec and its built artifact, you generate the most comprehensive testing strategy possible.
+
+Your job has two parts:
+1. Cover every use case the USER explicitly described (their real-world workflows, day-to-day usage, success criteria, and any edge cases they mentioned)
+2. Synthesize and add a large number of additional test cases that the user did NOT specify — edge cases, failure modes, boundary conditions, security issues, accessibility gaps, and stress scenarios that could occur in real-world usage even if the user never thought of them
+
+The goal is a product that works FLAWLESSLY for the user's specific use AND for any realistic scenario that could arise.
 
 Return a single JSON object:
 {
   "product_name": "...",
   "testing_summary": "2–3 sentence overview of the testing approach",
+  "user_scenarios_covered": [
+    {
+      "scenario": "Exactly what the user said they'd do",
+      "test_cases": [
+        { "name": "Test name", "steps": ["Step 1", "Step 2"], "expected": "Expected result", "priority": "critical|high|medium|low" }
+      ]
+    }
+  ],
+  "synthesized_edge_cases": [
+    {
+      "category": "Category name (e.g. 'Data persistence', 'Concurrency', 'Invalid input', 'Empty state')",
+      "rationale": "Why this edge case matters even though the user didn't mention it",
+      "test_cases": [
+        { "name": "Test name", "steps": ["Step 1", "Step 2"], "expected": "Expected result", "priority": "critical|high|medium|low" }
+      ]
+    }
+  ],
   "risk_areas": [
     { "area": "Risk area name", "severity": "high|medium|low", "description": "Why this is a risk" }
   ],
@@ -72,10 +95,10 @@ export default async function handler(req, res) {
   const apiKey = req.headers['x-api-key'] || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(401).json({ error: 'No API key provided. Enter your Anthropic API key in the platform.' });
 
-  const { schematic, build_result, is_software } = req.body;
+  const { schematic, build_result, is_software, usage_scenarios } = req.body;
   if (!schematic) return res.status(400).json({ error: 'Missing schematic' });
 
-  const testPrompt = `Generate comprehensive testing for this product:
+  const testPrompt = `Generate exhaustive testing for this product.
 
 PRODUCT: ${schematic.product_name}
 TYPE: ${schematic.product_type}
@@ -89,11 +112,22 @@ ${(schematic.pages_or_features || schematic.components || []).map(f => `- ${f.na
 HOW IT WORKS:
 ${(schematic.how_it_works || []).map(s => `${s.step}. ${s.title}: ${s.description}`).join('\n')}
 
+${usage_scenarios && usage_scenarios.length ? `USER'S STATED USAGE SCENARIOS (test these explicitly — they represent the user's real-world workflows):
+${usage_scenarios.map((s, i) => `${i+1}. ${s}`).join('\n')}
+
+These must all work flawlessly. Generate specific test cases for each one.` : ''}
+
 ${build_result ? `WHAT WAS BUILT:\n${build_result.description}\nFeatures built: ${(build_result.features_built || []).join(', ')}\nTech used: ${(build_result.tech_used || []).join(', ')}` : ''}
 
 ${!is_software ? `HARDWARE COMPONENTS:\n${(schematic.electrical_components || []).map(c => `- ${c.name} (${c.quantity}x): ${c.purpose}`).join('\n')}` : ''}
 
-Generate the complete testing strategy and test code. Return only JSON.`;
+INSTRUCTIONS:
+1. First, cover every user scenario listed above with dedicated test cases
+2. Then synthesize at least 15–20 additional edge cases the user didn't mention — boundary conditions, invalid input, empty states, data loss scenarios, concurrent access, accessibility, performance under load, security vulnerabilities, etc.
+3. Generate real, runnable automated test code (Playwright for web, Jest for unit tests, etc.)
+4. Be extremely specific to THIS product
+
+Return only JSON.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -104,8 +138,8 @@ Generate the complete testing strategy and test code. Return only JSON.`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 8000,
+        model: 'claude-opus-4-6',  // Most capable model for exhaustive test coverage generation
+        max_tokens: 12000,
         system: TEST_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: testPrompt }]
       })

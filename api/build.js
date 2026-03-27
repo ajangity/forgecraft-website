@@ -83,7 +83,7 @@ Build the complete, working product now. Return only the JSON.`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-opus-4-6',  // Most capable model for generating complete, production-quality code
         max_tokens: 16000,
         system: BUILD_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildPrompt }]
