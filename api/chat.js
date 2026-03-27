@@ -133,6 +133,7 @@ RULES:
 - For software products: be optimistic about what can be built, since ForgeCraft will actually code it.
 - Mermaid diagrams: only use valid Mermaid syntax. Use graph TD or flowchart TD direction.`;
 
+// Supabase project URL for JWT verification
 const SUPABASE_URL = 'https://iwouaznczwhojuvmignr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b3Vhem5jendob2p1dm1pZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDQzNTAsImV4cCI6MjA4OTk4MDM1MH0.FJ4hUYMGLkmiYcjYp8NnfsrtD-hHI8U59uYBWTtrEko';
 
