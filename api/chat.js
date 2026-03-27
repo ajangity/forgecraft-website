@@ -182,7 +182,11 @@ export default async function handler(req, res) {
           contents: geminiContents,
           generationConfig: {
             maxOutputTokens: 4096,
-            temperature: 0.7
+            temperature: 0.7,
+            responseMimeType: 'application/json',
+            // Disable thinking tokens — not needed for structured JSON responses
+            // and avoids parts[0] being a thought instead of the actual response
+            thinkingConfig: { thinkingBudget: 0 }
           }
         })
       }
@@ -194,11 +198,17 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: raw.error?.message || 'AI service error' });
     }
 
-    const text = raw.candidates?.[0]?.content?.parts?.[0]?.text;
+    // Gemini 2.5 Flash with thinking enabled returns parts with thought:true first.
+    // Skip thought parts and find the actual text response.
+    const parts = raw.candidates?.[0]?.content?.parts || [];
+    const responsePart = parts.find(p => !p.thought && p.text) || parts[0];
+    const text = responsePart?.text;
     if (!text) return res.status(500).json({ error: 'Empty response from AI' });
 
     let parsed;
     try {
+      // With responseMimeType:'application/json', Gemini returns clean JSON directly.
+      // Fallback regex handles edge cases.
       const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/);
       const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text;
       parsed = JSON.parse(jsonStr);
