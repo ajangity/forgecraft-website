@@ -84,16 +84,28 @@ REQUIREMENTS:
 5. The testing_writeup should be comprehensive (500+ words) and specific.
 6. Return ONLY the JSON. No text outside it.`;
 
+const SUPABASE_URL_T = 'https://iwouaznczwhojuvmignr.supabase.co';
+const SUPABASE_ANON_KEY_T = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b3Vhem5jendob2p1dm1pZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDQzNTAsImV4cCI6MjA4OTk4MDM1MH0.FJ4hUYMGLkmiYcjYp8NnfsrtD-hHI8U59uYBWTtrEko';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = req.headers['x-api-key'] || process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(401).json({ error: 'No API key provided. Enter your Anthropic API key in the platform.' });
+  // Supabase JWT auth
+  const authHeader = req.headers['authorization'];
+  if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Authentication required.' });
+  const userToken = authHeader.replace('Bearer ', '');
+  const userRes = await fetch(`${SUPABASE_URL_T}/auth/v1/user`, {
+    headers: { 'Authorization': `Bearer ${userToken}`, 'apikey': SUPABASE_ANON_KEY_T }
+  });
+  if (!userRes.ok) return res.status(401).json({ error: 'Session expired. Please sign in again.' });
+
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
 
   const { schematic, build_result, is_software, usage_scenarios } = req.body;
   if (!schematic) return res.status(400).json({ error: 'Missing schematic' });
@@ -129,39 +141,81 @@ INSTRUCTIONS:
 
 Return only JSON.`;
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-6',  // Most capable model for exhaustive test coverage generation
-        max_tokens: 12000,
-        system: TEST_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: testPrompt }]
-      })
-    });
-
-    const raw = await response.json();
-    if (!response.ok) return res.status(500).json({ error: raw.error?.message || 'Test service error' });
-
-    const text = raw.content[0].text;
-
-    let parsed;
+  // ── Primary: Claude Opus ─────────────────────────────────────────────────
+  if (anthropicKey) {
     try {
-      const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
-      const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text;
-      parsed = JSON.parse(jsonStr);
-    } catch {
-      return res.status(500).json({ error: 'Failed to parse test output' });
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-opus-4-6',
+          max_tokens: 12000,
+          system: TEST_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: testPrompt }]
+        })
+      });
+      const raw = await response.json();
+      if (response.ok) {
+        const text = raw.content?.[0]?.text;
+        if (text) {
+          const parsed = extractJSON(text);
+          if (parsed) return res.json(parsed);
+        }
+      } else {
+        console.error('Test Anthropic error:', raw.error?.message);
+      }
+    } catch (err) {
+      console.error('Test Anthropic call failed, falling back to Gemini:', err.message);
     }
+  }
 
-    res.json(parsed);
+  // ── Fallback: Gemini 2.5 Flash ────────────────────────────────────────────
+  if (!geminiKey) return res.status(503).json({ error: 'AI service not configured.' });
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: TEST_SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: testPrompt }] }],
+          generationConfig: {
+            maxOutputTokens: 8192,
+            temperature: 0.3,
+            responseMimeType: 'application/json',
+            thinkingConfig: { thinkingBudget: 0 }
+          }
+        })
+      }
+    );
+    const raw = await response.json();
+    if (!response.ok) {
+      const isQuota = response.status === 429 || (raw.error?.message || '').toLowerCase().includes('quota');
+      return res.status(isQuota ? 429 : 500).json({ error: raw.error?.message || 'Test service error' });
+    }
+    const parts = raw.candidates?.[0]?.content?.parts || [];
+    const responsePart = parts.find(p => !p.thought && p.text) || parts[0];
+    const text = responsePart?.text;
+    if (!text) return res.status(500).json({ error: 'Empty response from AI' });
+    const parsed = extractJSON(text);
+    if (parsed) return res.json(parsed);
+    return res.status(500).json({ error: 'Failed to parse test output' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
+}
+
+function extractJSON(text) {
+  try {
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
+    const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text;
+    return JSON.parse(jsonStr);
+  } catch { return null; }
 }
