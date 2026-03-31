@@ -571,7 +571,7 @@ function renderMockup(data){
           <div class="preview-url" id="mockup-url-bar">${e(data.product_name)} — UI Preview</div>
           <button class="preview-open" onclick="openMockupFullscreen()">&#x2197; Full screen</button>
         </div>
-        <iframe id="mockup-iframe" sandbox="allow-scripts allow-forms" style="width:100%;height:520px;border:none;display:block;background:#fff"></iframe>
+        <iframe id="mockup-iframe" sandbox="allow-scripts allow-forms allow-same-origin allow-popups" style="width:100%;height:520px;border:none;display:block;background:#fff"></iframe>
       </div>`;
     unlockTab('tab-preview');
   } else {
@@ -582,14 +582,12 @@ function renderMockup(data){
 
   switchTab('preview');
 
-  // Load HTML via blob URL — more stable than srcdoc, prevents any navigation
+  // Use srcdoc — the only reliable way to run scripts in a sandboxed iframe.
+  // Blob URL + allow-scripts without allow-same-origin silently kills onclick handlers in Chrome.
   const f=$('mockup-iframe');
   if(f){
     if(f._blobUrl){URL.revokeObjectURL(f._blobUrl);f._blobUrl=null;}
-    const blob=new Blob([data.html],{type:'text/html'});
-    const burl=URL.createObjectURL(blob);
-    f._blobUrl=burl;
-    f.src=burl;
+    f.srcdoc=data.html;
   }
 
   // Add fresh approval card in chat after every render
