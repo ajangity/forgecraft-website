@@ -210,6 +210,34 @@ pre code{background:none;padding:0}
 .nav-user-avatar{width:26px;height:26px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--primary),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
 .nav-user-avatar img{width:100%;height:100%;object-fit:cover}
 .nav-logout{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:11px;padding:3px 8px;cursor:pointer;transition:.2s}.nav-logout:hover{color:var(--text);border-color:var(--border2)}
+.nav-projects-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;padding:3px 10px;cursor:pointer;transition:.2s;display:none;align-items:center;gap:5px}.nav-projects-btn:hover{color:var(--text);border-color:var(--primary);background:var(--primary-dim)}
+/* Sessions drawer */
+.sessions-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:flex-start;justify-content:flex-end}
+.sessions-overlay.open{display:flex}
+.sessions-drawer{width:360px;height:100vh;background:var(--card);border-left:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden}
+.sessions-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+.sessions-header h3{font-size:15px;font-weight:700;margin:0}
+.sessions-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;padding:2px 6px;border-radius:5px;transition:.15s}.sessions-close:hover{color:var(--text);background:var(--surface)}
+.sessions-new-btn{margin:14px 16px 10px;padding:10px;background:linear-gradient(135deg,var(--primary),var(--purple));color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;text-align:center}.sessions-new-btn:hover{opacity:.9}
+.sessions-list{flex:1;overflow-y:auto;padding:0 12px 16px}
+.session-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 14px;margin-bottom:8px;cursor:pointer;transition:.15s;position:relative}.session-card:hover{border-color:var(--primary);background:var(--primary-dim)}
+.session-card-name{font-size:13px;font-weight:700;margin-bottom:3px;padding-right:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.session-card-desc{font-size:11px;color:var(--text2);margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.session-card-meta{display:flex;align-items:center;gap:6px}
+.session-phase-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.phase-badge-discovery{background:rgba(100,116,139,.18);color:#94a3b8}
+.phase-badge-proposal{background:rgba(245,158,11,.15);color:#f59e0b}
+.phase-badge-preview{background:rgba(139,92,246,.18);color:#a78bfa}
+.phase-badge-schematic{background:rgba(59,130,246,.18);color:#60a5fa}
+.phase-badge-build{background:rgba(16,185,129,.18);color:#34d399}
+.phase-badge-test{background:rgba(34,211,238,.15);color:#22d3ee}
+.session-card-time{font-size:10px;color:var(--text3)}
+.session-delete-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:4px;transition:.15s}.session-delete-btn:hover{color:var(--danger);background:rgba(239,68,68,.1)}
+.sessions-empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.sessions-empty .empty-icon{font-size:32px;margin-bottom:10px}
+.sessions-empty p{font-size:13px}
+.save-indicator{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:7px 13px;font-size:12px;color:var(--text2);display:none;align-items:center;gap:7px;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.save-indicator.show{display:flex}
 </style>
 </head>
 <body>
@@ -254,6 +282,7 @@ pre code{background:none;padding:0}
     <a href="/about">About</a>
     <a href="/platform" class="active">Platform</a>
     <div class="nav-user" id="nav-user">
+      <button class="nav-projects-btn" id="nav-projects-btn" onclick="openSessionsDrawer()">&#x1F4C1; My Projects</button>
       <div class="nav-user-avatar" id="nav-user-avatar">A</div>
       <span id="nav-user-name">User</span>
       <button class="nav-logout" onclick="logout()">Log out</button>
@@ -261,6 +290,26 @@ pre code{background:none;padding:0}
   </div>
 </nav>
 <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<!-- Sessions Drawer -->
+<div class="sessions-overlay" id="sessions-overlay" onclick="closeSessionsDrawerIfOutside(event)">
+  <div class="sessions-drawer" id="sessions-drawer">
+    <div class="sessions-header">
+      <h3>📁 My Projects</h3>
+      <button class="sessions-close" onclick="closeSessionsDrawer()">✕</button>
+    </div>
+    <button class="sessions-new-btn" onclick="startNewSession()">+ New Project</button>
+    <div class="sessions-list" id="sessions-list">
+      <div class="sessions-empty"><div class="empty-icon">📂</div><p>No saved projects yet.<br>Start building something!</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Save indicator -->
+<div class="save-indicator" id="save-indicator">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="save-indicator-text">Saved</span>
+</div>
 
 <div class="platform">
   <!-- CHAT -->
@@ -345,6 +394,7 @@ pre code{background:none;padding:0}
 mermaid.initialize({startOnLoad:false,theme:'dark',themeVariables:{primaryColor:'#3b82f6',primaryTextColor:'#e2e8f0',primaryBorderColor:'#1e40af',lineColor:'#475569',secondaryColor:'#8b5cf6',tertiaryColor:'#141428',background:'#07070f',mainBkg:'#141428',nodeBorder:'#1e40af',clusterBkg:'#0e0e1c',titleColor:'#e2e8f0',edgeLabelBackground:'#141428'}});
 
 let history=[],phase='discovery',busy=false,mmdN=0,curSch=null,curBuild=null,curProp=null,curMockup=null,__sessionToken='',__user=null;
+let curSessionId=null,_saveTimer=null;
 const $=id=>document.getElementById(id);
 const phaseIdx={discovery:0,proposal:1,preview:2,schematic:3,build:4,test:5};
 const phaseProgress={discovery:5,proposal:22,preview:42,schematic:60,build:80,test:100};
@@ -401,7 +451,7 @@ function handleResp(d){
       break;
     case 'proposal':
       addMsg('ai',d.content);if(d.data){curProp=d.data;addProposal(d.data);}
-      setPhase('proposal');break;
+      setPhase('proposal');saveSession();break;
     case 'schematic':
       addMsg('ai',d.content);
       if(d.data){curSch=d.data;renderSch(d.data);setPhase('schematic');}
@@ -506,7 +556,7 @@ async function callSchematic(){
     $('typing').classList.add('typing-hide');
     if(!r.ok){const err=await r.json().catch(()=>({}));addMsg('ai','Schematic generation failed: '+(err.error||'Unknown error'));return;}
     const data=await r.json();
-    if(data){curSch=data;renderSch(data);setPhase('schematic');}
+    if(data){curSch=data;renderSch(data);setPhase('schematic');saveSession();}
     // Also add a brief message in chat
     addMsg('ai',`✅ Schematic complete for **${data.product_name}**! Review the technical design in the panel →`);
   }catch(e){
@@ -543,6 +593,7 @@ async function callMockup(feedback=''){
       curMockup=data;
       renderMockup(data);
       setPhase('preview');
+      saveSession();
     }
   }catch(e){
     $('typing').classList.add('typing-hide');
@@ -781,6 +832,7 @@ async function triggerBuild(){
     curBuild=await r.json();
     renderBuild(curBuild);
     unlockTab('tab-test');
+    setPhase('build');saveSession();
     addMsg('ai',`&#x2705; **${e(curBuild.product_name||curSch.product_name)} is built!** Preview it in the Build panel. Ready to run tests whenever you are.`);
   }catch(err){
     bc.innerHTML=`<div class="build-status"><div style="font-size:36px">&#x26A0;&#xFE0F;</div><div class="build-log" style="color:var(--danger)">${e(err.message)}</div></div>`;
@@ -860,6 +912,7 @@ async function triggerTest(){
     const data=await r.json();
     renderTests(data);
     const total=(data.test_categories||[]).reduce((n,c)=>n+(c.test_cases?.length||0),0);
+    setPhase('test');saveSession();
     addMsg('ai',`&#x1F389; Testing complete! **${total} test cases** across ${(data.test_categories||[]).length} categories + full writeup in the Testing panel.`);
   }catch(err){
     tc.innerHTML=`<div class="build-status"><div style="font-size:36px">&#x26A0;&#xFE0F;</div><div class="build-log" style="color:var(--danger)">${e(err.message)}</div></div>`;
@@ -1055,6 +1108,206 @@ async function saveApiKey(){
   btn.disabled=false; btn.textContent='Save & Start Building ⚡';
 }
 
+// ── Sessions: save / load / UI ────────────────────────────────────────────────
+function sessionPayload(){
+  return {
+    product_name: curProp?.product_name || 'Untitled Project',
+    product_description: curProp?.tagline || curProp?.description?.slice(0,120) || '',
+    phase,
+    chat_history: history,
+    messages_html: $('messages')?.innerHTML || '',
+    proposal: curProp || null,
+    mockup_html: curMockup?.html || null,
+    schematic: curSch || null,
+    build_output: curBuild || null
+  };
+}
+
+async function saveSession(immediate=false){
+  if(!__user||!__sessionToken) return;
+  // Debounce unless immediate
+  if(!immediate){clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>saveSession(true),2000);return;}
+  try{
+    const body=sessionPayload();
+    const method=curSessionId?'PUT':'POST';
+    const url=curSessionId?`/api/sessions?id=${curSessionId}`:'/api/sessions';
+    const r=await fetch(url,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},body:JSON.stringify(body)});
+    if(r.ok){
+      const d=await r.json();
+      if(!curSessionId&&d?.id)curSessionId=d.id;
+      showSaveIndicator('Saved');
+    }
+  }catch(ex){console.warn('Auto-save failed:',ex);}
+}
+
+function showSaveIndicator(msg='Saved'){
+  const el=$('save-indicator');
+  $('save-indicator-text').textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+async function openSessionsDrawer(){
+  $('sessions-overlay').classList.add('open');
+  await loadSessionsList();
+}
+function closeSessionsDrawer(){$('sessions-overlay').classList.remove('open');}
+function closeSessionsDrawerIfOutside(e){if(e.target===$('sessions-overlay'))closeSessionsDrawer();}
+
+async function loadSessionsList(){
+  const el=$('sessions-list');
+  el.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading…</div>';
+  try{
+    const r=await fetch('/api/sessions',{headers:{'Authorization':'Bearer '+__sessionToken}});
+    if(!r.ok)throw new Error();
+    const sessions=await r.json();
+    if(!sessions||sessions.length===0){
+      el.innerHTML='<div class="sessions-empty"><div class="empty-icon">📂</div><p>No saved projects yet.<br>Start building something!</p></div>';
+      return;
+    }
+    el.innerHTML=sessions.map(s=>{
+      const badge=`session-phase-badge phase-badge-${s.phase||'discovery'}`;
+      const phaseLabel={discovery:'Discover',proposal:'Proposal',preview:'Preview',schematic:'Schematic',build:'Build',test:'Testing'}[s.phase]||s.phase;
+      const time=formatRelTime(s.updated_at);
+      const active=s.id===curSessionId?' style="border-color:var(--primary)"':'';
+      return `<div class="session-card"${active} onclick="restoreSession('${s.id}')">
+        <div class="session-card-name">${esc(s.product_name)}</div>
+        <div class="session-card-desc">${esc(s.product_description||'No description')}</div>
+        <div class="session-card-meta">
+          <span class="${badge}">${phaseLabel}</span>
+          <span class="session-card-time">${time}</span>
+        </div>
+        <button class="session-delete-btn" onclick="deleteSession(event,'${s.id}')">🗑</button>
+      </div>`;
+    }).join('');
+  }catch(ex){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--danger);font-size:13px">Failed to load sessions.</div>';}
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+
+function formatRelTime(iso){
+  const diff=Date.now()-new Date(iso).getTime();
+  const m=Math.floor(diff/60000);
+  if(m<1)return 'just now';
+  if(m<60)return m+'m ago';
+  const h=Math.floor(m/60);
+  if(h<24)return h+'h ago';
+  const d=Math.floor(h/24);
+  return d===1?'yesterday':d+'d ago';
+}
+
+async function restoreSession(id){
+  if(busy){addMsg('ai','Please wait for the current operation to finish before switching projects.');return;}
+  try{
+    $('sessions-list').innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading project…</div>';
+    const r=await fetch(`/api/sessions/${id}`,{headers:{'Authorization':'Bearer '+__sessionToken}});
+    // Sessions API doesn't have a GET by ID endpoint — fetch list and find it
+    const list=await fetch('/api/sessions',{headers:{'Authorization':'Bearer '+__sessionToken}});
+    const sessions=await list.json();
+    const s=sessions.find(x=>x.id===id);
+    if(!s){addMsg('ai','Could not load that project. Please try again.');closeSessionsDrawer();return;}
+    // We need the full data — make a targeted GET for just this session
+    // Use execute_sql equivalent: fetch full session via REST with select=*
+    const full=await fetch(`/api/sessions?full=1&id=${id}`,{headers:{'Authorization':'Bearer '+__sessionToken}});
+    // Fallback: use sessions endpoint with additional data fetching from Supabase directly
+    const {data:{session:cs}}=await _sb.auth.getSession();
+    const {data:row}=await _sb.from('forge_sessions').select('*').eq('id',id).single();
+    if(!row){addMsg('ai','Project not found.');closeSessionsDrawer();return;}
+    applyRestoredSession(row);
+    closeSessionsDrawer();
+  }catch(ex){console.error(ex);addMsg('ai','Failed to restore project.');closeSessionsDrawer();}
+}
+
+function applyRestoredSession(row){
+  // Restore state variables
+  curSessionId=row.id;
+  history=row.chat_history||[];
+  curProp=row.proposal||null;
+  curMockup=row.mockup_html?{html:row.mockup_html,product_name:row.product_name}:null;
+  curSch=row.schematic||null;
+  curBuild=row.build_output||null;
+
+  // Restore chat messages
+  const msgEl=$('messages');
+  if(row.messages_html){
+    msgEl.innerHTML=row.messages_html;
+    msgEl.style.display='flex';
+    $('welcome').style.display='none';
+    // Re-enable any disabled buttons in the last action card (they may have been frozen at save time)
+    const allCards=msgEl.querySelectorAll('.bub button:disabled');
+    allCards.forEach(b=>b.disabled=false);
+  }
+
+  // Restore phase + progress bar
+  setPhase(row.phase||'discovery');
+
+  // Restore right panel output
+  if(row.mockup_html&&(row.phase==='preview'||row.phase==='schematic'||row.phase==='build'||row.phase==='test')){
+    // Restore mockup silently (no approval card — already in chat history)
+    const pc=$('preview-content');
+    $('preview-empty').style.display='none';
+    pc.style.display='block';
+    if(!$('mockup-iframe')){
+      pc.innerHTML=`<div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--primary);text-transform:uppercase;margin-bottom:4px">Interactive Preview</div>
+        <div id="mockup-title" style="font-size:18px;font-weight:700">${esc(row.product_name)}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">Click through the screens below</div>
+      </div>
+      <div class="preview-wrap" style="margin-bottom:12px">
+        <div class="preview-bar">
+          <div class="preview-url" id="mockup-url-bar">${esc(row.product_name)} — UI Preview</div>
+          <button class="preview-open" onclick="openMockupFullscreen()">&#x2197; Full screen</button>
+        </div>
+        <iframe id="mockup-iframe" sandbox="allow-scripts allow-forms allow-same-origin allow-popups" style="width:100%;height:520px;border:none;display:block;background:#fff"></iframe>
+      </div>`;
+    }
+    unlockTab('tab-preview');
+    const f=$('mockup-iframe');
+    if(f)f.srcdoc=row.mockup_html;
+  }
+
+  if(row.schematic&&row.phase!=='discovery'&&row.phase!=='proposal'&&row.phase!=='preview'){
+    renderSch(row.schematic);
+    unlockTab('tab-sch');
+  }
+
+  if(row.build_output&&(row.phase==='build'||row.phase==='test')){
+    renderBuild(row.build_output);
+    unlockTab('tab-build');
+    if(row.phase==='test')switchTab('test');
+    else switchTab('build');
+  }
+
+  showSaveIndicator('Project loaded ✓');
+  scroll();
+}
+
+async function deleteSession(e,id){
+  e.stopPropagation();
+  if(!confirm('Delete this project? This cannot be undone.'))return;
+  const r=await fetch(`/api/sessions?id=${id}`,{method:'DELETE',headers:{'Authorization':'Bearer '+__sessionToken}});
+  if(r.ok){
+    if(curSessionId===id){curSessionId=null;}
+    await loadSessionsList();
+  }
+}
+
+function startNewSession(){
+  if(history.length>0&&!confirm('Start a new project? Your current session is saved in My Projects.'))return;
+  // Reset all state
+  curSessionId=null;history=[];curProp=null;curMockup=null;curSch=null;curBuild=null;phase='discovery';
+  const msgEl=$('messages');msgEl.innerHTML='';msgEl.style.display='none';
+  $('welcome').style.display='';
+  setPhase('discovery');
+  // Lock tabs back
+  ['tab-preview','tab-build','tab-test'].forEach(t=>{const el=$(t);if(el)el.classList.add('locked');});
+  $('panel-preview')&&($('preview-content').style.display='none',$('preview-empty').style.display='');
+  switchTab('sch');
+  $('sch-content')&&($('sch-content').innerHTML='');
+  closeSessionsDrawer();
+  $('inp').focus();
+}
+
 // ── Nav user ──────────────────────────────────────────────────────────────────
 function updateNavUser(supaUser){
   const name = __user?.display_name || supaUser?.user_metadata?.full_name || supaUser?.email?.split('@')[0] || 'You';
@@ -1064,6 +1317,7 @@ function updateNavUser(supaUser){
   if(pic){ av.innerHTML=`<img src="${pic}" alt="avatar">`; }
   else { av.textContent = name[0].toUpperCase(); }
   $('nav-user').style.display='flex';
+  $('nav-projects-btn').style.display='flex';
 }
 
 // ── Logout ────────────────────────────────────────────────────────────────────
@@ -1071,6 +1325,8 @@ async function logout(){
   await _sb.auth.signOut();
   __user=null; __sessionToken='';
   $('nav-user').style.display='none';
+  $('nav-projects-btn').style.display='none';
+  curSessionId=null;
   history=[]; phase='discovery'; curSch=null; curBuild=null;
   $('welcome').classList.remove('gone');
   $('messages').style.display='none';
