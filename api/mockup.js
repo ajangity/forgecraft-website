@@ -91,14 +91,14 @@ export default async function handler(req, res) {
   });
   if (!userRes.ok) return res.status(401).json({ error: 'Session expired. Please sign in again.' });
 
-  const { proposal, conversation_summary, feedback } = req.body;
+  const { proposal, conversation_summary, feedback, previous_html } = req.body;
   if (!proposal) return res.status(400).json({ error: 'Proposal required.' });
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
 
-  // Build the user prompt from proposal + optional feedback
-  const userPrompt = buildPrompt(proposal, conversation_summary, feedback);
+  // Build the user prompt from proposal + optional feedback + previous HTML
+  const userPrompt = buildPrompt(proposal, conversation_summary, feedback, previous_html);
 
   // ── Primary: Claude Sonnet (quality HTML generation) ─────────────────────
   if (anthropicKey) {
@@ -180,8 +180,8 @@ export default async function handler(req, res) {
   }
 }
 
-function buildPrompt(proposal, summary, feedback) {
-  const lines = [
+function buildPrompt(proposal, summary, feedback, previousHtml) {
+  const meta = [
     `Product Name: ${proposal.product_name}`,
     `Type: ${proposal.product_type || 'web_app'}`,
     `Tagline: ${proposal.tagline || ''}`,
@@ -191,9 +191,26 @@ function buildPrompt(proposal, summary, feedback) {
     summary ? `User Context: ${summary}` : '',
   ].filter(Boolean).join('\n');
 
-  if (feedback) {
-    return `${lines}\n\nThe user reviewed the previous mockup and requested these changes:\n"${feedback}"\n\nGenerate an updated HTML prototype incorporating this feedback.`;
+  // Feedback with previous HTML = surgical edit, not full regeneration
+  if (feedback && previousHtml) {
+    return `You are editing an existing HTML prototype. Here is the CURRENT HTML that is already working and has all screens with functioning navigation:
+
+\`\`\`html
+${previousHtml}
+\`\`\`
+
+The user has reviewed this prototype and wants the following changes:
+"${feedback}"
+
+INSTRUCTIONS:
+- Start from the HTML above as your base. DO NOT regenerate from scratch.
+- Make ONLY the changes needed to fulfill the user's feedback.
+- Keep ALL existing screens intact — do not remove any screens or navigation items.
+- Keep ALL existing navigation working — every nav button must still call showScreen() correctly.
+- Keep the same color theme, layout structure, and overall design unless the user explicitly asked to change those.
+- Output the complete updated HTML file (all screens, all navigation, all styles).`;
   }
 
-  return `${lines}\n\nGenerate a complete, realistic, interactive HTML prototype for this product. Show all key screens with working navigation.`;
+  // First generation
+  return `${meta}\n\nGenerate a complete, realistic, interactive HTML prototype for this product. Show all key screens with working navigation.`;
 }

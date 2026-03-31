@@ -529,9 +529,13 @@ async function callMockup(feedback=''){
     const { data:{ session:cs } } = await _sb.auth.getSession();
     __sessionToken = cs?.access_token || __sessionToken;
     const summary = history.filter(m=>m.role==='user').map(m=>m.content).join(' | ');
+    // Pass previous HTML on feedback iterations so AI edits in-place instead of regenerating
+    const body={proposal:curProp,conversation_summary:summary};
+    if(feedback){body.feedback=feedback;}
+    if(feedback&&curMockup?.html){body.previous_html=curMockup.html;}
     const r=await fetch('/api/mockup',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},
-      body:JSON.stringify({proposal:curProp, conversation_summary:summary, feedback:feedback||undefined})});
+      body:JSON.stringify(body)});
     $('typing').classList.add('typing-hide');
     if(!r.ok){const err=await r.json().catch(()=>({}));addMsg('ai','Preview generation failed: '+(err.error||'Unknown error'));return;}
     const data=await r.json();
