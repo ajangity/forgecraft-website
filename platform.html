@@ -550,33 +550,53 @@ async function callMockup(feedback=''){
 function renderMockup(data){
   // Show preview panel
   $('preview-empty').style.display='none';
-  const pc=$('preview-content');pc.style.display='block';
-  pc.innerHTML=`
-    <div style="margin-bottom:10px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--primary);text-transform:uppercase;margin-bottom:4px">Interactive Preview</div>
-      <div style="font-size:18px;font-weight:700">${e(data.product_name)}</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:2px">Click through the screens below — this is exactly what will be built</div>
-    </div>
-    <div class="preview-wrap" style="margin-bottom:12px">
-      <div class="preview-bar">
-        <div class="preview-url">${e(data.product_name)} — UI Preview</div>
-        <button class="preview-open" onclick="openMockupFullscreen()">&#x2197; Full screen</button>
-      </div>
-      <iframe id="mockup-iframe" sandbox="allow-scripts allow-forms allow-same-origin" style="width:100%;height:520px;border:none;display:block;background:#fff"></iframe>
-    </div>`;
-  unlockTab('tab-preview');
-  switchTab('preview');
-  setTimeout(()=>{const f=$('mockup-iframe');if(f)f.srcdoc=data.html;},100);
+  const pc=$('preview-content');
+  const isFirstRender=pc.style.display==='none'||!pc.style.display||!$('mockup-iframe');
+  pc.style.display='block';
 
-  // Add approval prompt in chat
+  if(isFirstRender){
+    // Build panel structure once — never torn down again
+    pc.innerHTML=`
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--primary);text-transform:uppercase;margin-bottom:4px">Interactive Preview</div>
+        <div id="mockup-title" style="font-size:18px;font-weight:700">${e(data.product_name)}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">Click through the screens below — this is exactly what will be built</div>
+      </div>
+      <div class="preview-wrap" style="margin-bottom:12px">
+        <div class="preview-bar">
+          <div class="preview-url" id="mockup-url-bar">${e(data.product_name)} — UI Preview</div>
+          <button class="preview-open" onclick="openMockupFullscreen()">&#x2197; Full screen</button>
+        </div>
+        <iframe id="mockup-iframe" sandbox="allow-scripts allow-forms" style="width:100%;height:520px;border:none;display:block;background:#fff"></iframe>
+      </div>`;
+    unlockTab('tab-preview');
+  } else {
+    // Update labels only — iframe stays alive, no DOM teardown
+    const t=$('mockup-title');if(t)t.textContent=data.product_name;
+    const u=$('mockup-url-bar');if(u)u.textContent=data.product_name+' — UI Preview';
+  }
+
+  switchTab('preview');
+
+  // Load HTML via blob URL — more stable than srcdoc, prevents any navigation
+  const f=$('mockup-iframe');
+  if(f){
+    if(f._blobUrl){URL.revokeObjectURL(f._blobUrl);f._blobUrl=null;}
+    const blob=new Blob([data.html],{type:'text/html'});
+    const burl=URL.createObjectURL(blob);
+    f._blobUrl=burl;
+    f.src=burl;
+  }
+
+  // Add fresh approval card in chat after every render
   const wrap=document.createElement('div');wrap.className='msg ai';
   const av=document.createElement('div');av.className='av ai';av.textContent='⚡';
   const card=document.createElement('div');card.className='bub';
-  card.innerHTML=`<p><strong>Here's your interactive preview!</strong> Click through the screens in the Preview tab to see every part of the app.</p>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:10px">Does this match what you had in mind?</p>
+  card.innerHTML=`<p><strong>${isFirstRender?'Here\'s your interactive preview!':'Preview updated! ✨'}</strong> Check the Preview tab to see every screen.</p>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:10px">${isFirstRender?'Does this match what you had in mind?':'Does it look right now?'}</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button style="flex:1;min-width:140px;padding:9px 12px;background:var(--success);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" onclick="approveMockup(this)">✅ Looks perfect — build it!</button>
-      <button style="flex:1;min-width:140px;padding:9px 12px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer" onclick="requestMockupChanges(this)">✏️ I want changes</button>
+      <button style="flex:1;min-width:140px;padding:9px 12px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer" onclick="requestMockupChanges(this)">✏️ I want more changes</button>
     </div>`;
   wrap.appendChild(av);wrap.appendChild(card);$('messages').appendChild(wrap);scroll();
 }

@@ -7,6 +7,7 @@ REQUIREMENTS:
 - Output ONLY a complete, valid HTML file. No explanation, no markdown fences, no extra text — just raw HTML.
 - Include ALL CSS and JS inline (no external dependencies except Tailwind CDN).
 - Use: <script src="https://cdn.tailwindcss.com"></script>
+- The VERY FIRST tag inside <head> must be: <base target="_blank"> — this prevents any accidental link navigation.
 - Build a REALISTIC, PROFESSIONAL app prototype — not a wireframe. It should look like a real shipped product.
 - Show ALL key screens/pages from the proposal, each navigable via sidebar, tab bar, or bottom nav.
 - Include realistic placeholder data that matches the product's purpose (real-looking names, values, entries — not "Lorem ipsum").
@@ -16,6 +17,15 @@ REQUIREMENTS:
 - Use smooth transitions between screens (CSS transitions).
 - Show at least 3–5 distinct screens covering the product's core features.
 - App should feel "alive" — hover states, realistic data, proper spacing, icons (use emoji or simple SVG).
+
+CRITICAL NAVIGATION RULES — YOU MUST FOLLOW THESE OR THE PREVIEW WILL BREAK:
+- ALL screen navigation MUST use JavaScript show/hide logic ONLY. Example: onclick="showScreen('dashboard')"
+- NEVER use <a href="pagename.html"> or any href that points to a file/path. Those URLs don't exist and will break the preview.
+- NEVER use window.location, location.href, location.replace(), or ANY navigation API.
+- NEVER use history.pushState() or history.replaceState().
+- For any link-style element, use: <a href="javascript:void(0)" onclick="showScreen('name')"> or a <button> with onclick.
+- The entire app must live in one HTML file with all screens as hidden <div> elements toggled by JS.
+- The showScreen() function should add/remove a CSS class to show/hide screen divs — no redirects ever.
 
 DESIGN GUIDELINES BY TYPE:
 - Habit/wellness tracker: clean white/pastel background, progress rings, streak counters, checklist items
