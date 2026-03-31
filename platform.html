@@ -395,6 +395,10 @@ async function callChat(){
 function handleResp(d){
   switch(d.type){
     case 'question':case'message':addMsg('ai',d.content);break;
+    case 'recommendation':
+      addMsg('ai',d.content);
+      if(d.data){addRecommendation(d.data);}
+      break;
     case 'proposal':
       addMsg('ai',d.content);if(d.data){curProp=d.data;addProposal(d.data);}
       setPhase('proposal');break;
@@ -403,6 +407,53 @@ function handleResp(d){
       if(d.data){curSch=d.data;renderSch(d.data);setPhase('schematic');}
       break;
   }
+}
+
+function addRecommendation(d){
+  const ep=d.existing_product||{};
+  const wrap=document.createElement('div');wrap.className='msg ai';
+  const av=document.createElement('div');av.className='av ai';av.textContent='⚡';
+  const card=document.createElement('div');card.style.cssText='max-width:85%';
+  card.innerHTML=`
+    <div style="background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(59,130,246,.08));border:1px solid rgba(139,92,246,.3);border-radius:14px;padding:16px;margin-top:2px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--purple);text-transform:uppercase;margin-bottom:10px">Existing App Found</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:26px;width:44px;height:44px;background:var(--card2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${e(ep.icon_emoji||'📱')}</div>
+        <div>
+          <div style="font-size:16px;font-weight:700">${e(ep.name)}</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:2px">${e(ep.tagline)}</div>
+          ${ep.url?`<a href="${e(ep.url)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary);text-decoration:none">${e(ep.url.replace('https://','').replace(/\/$/,''))}</a>`:''}
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.5">
+        <strong style="color:var(--text)">Why it matches:</strong> ${e(ep.why_similar)}
+      </div>
+      ${(ep.key_features||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${ep.key_features.map(f=>`<span style="font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:2px 8px;color:var(--text2)">${e(f)}</span>`).join('')}</div>`:''}
+      ${(ep.platforms||[]).length?`<div style="font-size:11px;color:var(--text3);margin-bottom:10px">Available on: ${ep.platforms.join(', ')}</div>`:''}
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">What do you want to do?</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="rec-btn" onclick="chooseRecommendation('clone',this)" style="padding:10px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;line-height:1.4">
+          🔄 <strong>Build a clone</strong><br><span style="font-size:12px;font-weight:400;opacity:.85">${e(d.clone_description||'Build something that works exactly like this app, owned by you.')}</span>
+        </button>
+        <button class="rec-btn" onclick="chooseRecommendation('customize',this)" style="padding:10px 14px;background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;line-height:1.4">
+          ✏️ <strong>Customize it for me</strong><br><span style="font-size:12px;font-weight:400;color:var(--text2)">${e(d.custom_description||'Tell us what\'s missing and we\'ll build a version tailored exactly to you.')}</span>
+        </button>
+      </div>
+    </div>`;
+  wrap.appendChild(av);wrap.appendChild(card);$('messages').appendChild(wrap);scroll();
+}
+
+async function chooseRecommendation(choice, btn){
+  btn.closest('[style*="gradient"]').querySelectorAll('.rec-btn').forEach(b=>{b.disabled=true;b.style.opacity='.5';b.style.cursor='not-allowed';});
+  let text;
+  if(choice==='clone'){
+    text='Build me a clone of this app — same core features, but built from scratch so I own it completely.';
+  } else {
+    text='I want a customized version tailored to my specific needs — let me tell you what I want differently.';
+  }
+  addMsg('user',text);
+  history.push({role:'user',content:text});
+  await callChat();
 }
 
 function addMsg(role,content){
