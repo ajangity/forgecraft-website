@@ -282,7 +282,6 @@ pre code{background:none;padding:0}
     <a href="/about">About</a>
     <a href="/platform" class="active">Platform</a>
     <div class="nav-user" id="nav-user">
-      <button class="nav-projects-btn" id="nav-projects-btn" onclick="openSessionsDrawer()">&#x1F4C1; My Projects</button>
       <div class="nav-user-avatar" id="nav-user-avatar">A</div>
       <span id="nav-user-name">User</span>
       <button class="nav-logout" onclick="logout()">Log out</button>
@@ -352,6 +351,8 @@ pre code{background:none;padding:0}
       <div class="out-tab active" id="tab-sch" onclick="switchTab('sch')">Schematic</div>
       <div class="out-tab locked" id="tab-build" onclick="switchTab('build')">Build</div>
       <div class="out-tab locked" id="tab-test" onclick="switchTab('test')">Testing</div>
+      <div style="flex:1"></div>
+      <div class="out-tab" id="tab-projects" onclick="switchTab('projects')" style="border-left:1px solid var(--border);margin-left:4px;padding-left:16px">&#x1F4C1; My Projects</div>
     </div>
     <div class="out-body">
       <div class="out-panel" id="panel-preview">
@@ -385,6 +386,18 @@ pre code{background:none;padding:0}
           <p>After the build, ForgeCraft generates comprehensive tests, a trial case, and a full testing writeup.</p>
         </div>
         <div id="test-content" style="display:none"></div>
+      </div>
+      <div class="out-panel" id="panel-projects" style="padding:0">
+        <div style="padding:20px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:15px;font-weight:700">My Projects</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">Your saved builds — click any to continue where you left off</div>
+          </div>
+          <button onclick="startNewSession()" style="padding:7px 14px;background:linear-gradient(135deg,var(--primary),var(--purple));color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ New Project</button>
+        </div>
+        <div id="projects-panel-list" style="padding:14px 16px;overflow-y:auto;max-height:calc(100vh - 160px)">
+          <div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Loading your projects…</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1005,6 +1018,7 @@ function switchTab(name){
   document.querySelectorAll('.out-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.out-panel').forEach(p=>p.classList.remove('active'));
   $('tab-'+name)?.classList.add('active');$('panel-'+name)?.classList.add('active');
+  if(name==='projects')loadProjectsPanel();
 }
 function unlockTab(id){const t=$(id);if(t){t.classList.remove('locked');}}
 
@@ -1147,41 +1161,50 @@ function showSaveIndicator(msg='Saved'){
   setTimeout(()=>el.classList.remove('show'),2200);
 }
 
-async function openSessionsDrawer(){
-  $('sessions-overlay').classList.add('open');
-  await loadSessionsList();
-}
-function closeSessionsDrawer(){$('sessions-overlay').classList.remove('open');}
-function closeSessionsDrawerIfOutside(e){if(e.target===$('sessions-overlay'))closeSessionsDrawer();}
+// Drawer kept as no-op — projects now live in the panel tab
+function openSessionsDrawer(){switchTab('projects');}
+function closeSessionsDrawer(){/* no-op — no drawer anymore */}
+function closeSessionsDrawerIfOutside(){}
 
-async function loadSessionsList(){
-  const el=$('sessions-list');
-  el.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading…</div>';
+function renderSessionCards(sessions, containerId){
+  const el=$(containerId);
+  if(!el)return;
+  if(!sessions||sessions.length===0){
+    el.innerHTML='<div class="sessions-empty"><div class="empty-icon">📂</div><p>No saved projects yet.<br>Start building something!</p></div>';
+    return;
+  }
+  el.innerHTML=sessions.map(s=>{
+    const badge=`session-phase-badge phase-badge-${s.phase||'discovery'}`;
+    const phaseLabel={discovery:'Discover',proposal:'Proposal',preview:'Preview',schematic:'Schematic',build:'Build',test:'Testing'}[s.phase]||s.phase;
+    const time=formatRelTime(s.updated_at);
+    const active=s.id===curSessionId?' style="border-color:var(--primary);background:var(--primary-dim)"':'';
+    return `<div class="session-card"${active} onclick="restoreSession('${s.id}')">
+      <div class="session-card-name">${esc(s.product_name)}</div>
+      <div class="session-card-desc">${esc(s.product_description||'No description')}</div>
+      <div class="session-card-meta">
+        <span class="${badge}">${phaseLabel}</span>
+        <span class="session-card-time">${time}</span>
+      </div>
+      <button class="session-delete-btn" onclick="deleteSession(event,'${s.id}')">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+async function loadProjectsPanel(){
+  const el=$('projects-panel-list');
+  if(!el)return;
+  if(!__sessionToken){el.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:13px">Sign in to see your projects.</div>';return;}
+  el.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:13px">Loading…</div>';
   try{
     const r=await fetch('/api/sessions',{headers:{'Authorization':'Bearer '+__sessionToken}});
     if(!r.ok)throw new Error();
     const sessions=await r.json();
-    if(!sessions||sessions.length===0){
-      el.innerHTML='<div class="sessions-empty"><div class="empty-icon">📂</div><p>No saved projects yet.<br>Start building something!</p></div>';
-      return;
-    }
-    el.innerHTML=sessions.map(s=>{
-      const badge=`session-phase-badge phase-badge-${s.phase||'discovery'}`;
-      const phaseLabel={discovery:'Discover',proposal:'Proposal',preview:'Preview',schematic:'Schematic',build:'Build',test:'Testing'}[s.phase]||s.phase;
-      const time=formatRelTime(s.updated_at);
-      const active=s.id===curSessionId?' style="border-color:var(--primary)"':'';
-      return `<div class="session-card"${active} onclick="restoreSession('${s.id}')">
-        <div class="session-card-name">${esc(s.product_name)}</div>
-        <div class="session-card-desc">${esc(s.product_description||'No description')}</div>
-        <div class="session-card-meta">
-          <span class="${badge}">${phaseLabel}</span>
-          <span class="session-card-time">${time}</span>
-        </div>
-        <button class="session-delete-btn" onclick="deleteSession(event,'${s.id}')">🗑</button>
-      </div>`;
-    }).join('');
-  }catch(ex){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--danger);font-size:13px">Failed to load sessions.</div>';}
+    renderSessionCards(sessions,'projects-panel-list');
+  }catch(ex){el.innerHTML='<div style="padding:40px;text-align:center;color:var(--danger);font-size:13px">Failed to load projects.</div>';}
 }
+
+// Legacy alias kept for auto-save toast refresh
+async function loadSessionsList(){ await loadProjectsPanel(); }
 
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 
@@ -1198,24 +1221,15 @@ function formatRelTime(iso){
 
 async function restoreSession(id){
   if(busy){addMsg('ai','Please wait for the current operation to finish before switching projects.');return;}
+  const el=$('projects-panel-list');
+  if(el)el.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:13px">Loading project…</div>';
   try{
-    $('sessions-list').innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading project…</div>';
-    const r=await fetch(`/api/sessions/${id}`,{headers:{'Authorization':'Bearer '+__sessionToken}});
-    // Sessions API doesn't have a GET by ID endpoint — fetch list and find it
-    const list=await fetch('/api/sessions',{headers:{'Authorization':'Bearer '+__sessionToken}});
-    const sessions=await list.json();
-    const s=sessions.find(x=>x.id===id);
-    if(!s){addMsg('ai','Could not load that project. Please try again.');closeSessionsDrawer();return;}
-    // We need the full data — make a targeted GET for just this session
-    // Use execute_sql equivalent: fetch full session via REST with select=*
-    const full=await fetch(`/api/sessions?full=1&id=${id}`,{headers:{'Authorization':'Bearer '+__sessionToken}});
-    // Fallback: use sessions endpoint with additional data fetching from Supabase directly
-    const {data:{session:cs}}=await _sb.auth.getSession();
     const {data:row}=await _sb.from('forge_sessions').select('*').eq('id',id).single();
-    if(!row){addMsg('ai','Project not found.');closeSessionsDrawer();return;}
+    if(!row){addMsg('ai','Project not found.');loadProjectsPanel();return;}
     applyRestoredSession(row);
-    closeSessionsDrawer();
-  }catch(ex){console.error(ex);addMsg('ai','Failed to restore project.');closeSessionsDrawer();}
+    // After restore, refresh panel to show active state then switch to the relevant tab
+    loadProjectsPanel();
+  }catch(ex){console.error(ex);addMsg('ai','Failed to restore project.');loadProjectsPanel();}
 }
 
 function applyRestoredSession(row){
@@ -1302,9 +1316,9 @@ function startNewSession(){
   // Lock tabs back
   ['tab-preview','tab-build','tab-test'].forEach(t=>{const el=$(t);if(el)el.classList.add('locked');});
   $('panel-preview')&&($('preview-content').style.display='none',$('preview-empty').style.display='');
+  const sch=$('sch-content');if(sch){sch.innerHTML='';sch.style.display='none';}
+  $('sch-empty')&&($('sch-empty').style.display='');
   switchTab('sch');
-  $('sch-content')&&($('sch-content').innerHTML='');
-  closeSessionsDrawer();
   $('inp').focus();
 }
 
@@ -1317,7 +1331,6 @@ function updateNavUser(supaUser){
   if(pic){ av.innerHTML=`<img src="${pic}" alt="avatar">`; }
   else { av.textContent = name[0].toUpperCase(); }
   $('nav-user').style.display='flex';
-  $('nav-projects-btn').style.display='flex';
 }
 
 // ── Logout ────────────────────────────────────────────────────────────────────
@@ -1325,7 +1338,6 @@ async function logout(){
   await _sb.auth.signOut();
   __user=null; __sessionToken='';
   $('nav-user').style.display='none';
-  $('nav-projects-btn').style.display='none';
   curSessionId=null;
   history=[]; phase='discovery'; curSch=null; curBuild=null;
   $('welcome').classList.remove('gone');
