@@ -91,14 +91,14 @@ export default async function handler(req, res) {
   });
   if (!userRes.ok) return res.status(401).json({ error: 'Session expired. Please sign in again.' });
 
-  const { proposal, conversation_summary, feedback, previous_html } = req.body;
+  const { proposal, conversation_summary, feedback, previous_html, self_inspect } = req.body;
   if (!proposal) return res.status(400).json({ error: 'Proposal required.' });
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
 
-  // Build the user prompt from proposal + optional feedback + previous HTML
-  const userPrompt = buildPrompt(proposal, conversation_summary, feedback, previous_html);
+  // Build the user prompt from proposal + optional feedback/inspect + previous HTML
+  const userPrompt = buildPrompt(proposal, conversation_summary, feedback, previous_html, self_inspect);
 
   // ── Primary: Claude Sonnet (quality HTML generation) ─────────────────────
   if (anthropicKey) {
@@ -180,7 +180,7 @@ export default async function handler(req, res) {
   }
 }
 
-function buildPrompt(proposal, summary, feedback, previousHtml) {
+function buildPrompt(proposal, summary, feedback, previousHtml, selfInspect) {
   const meta = [
     `Product Name: ${proposal.product_name}`,
     `Type: ${proposal.product_type || 'web_app'}`,
@@ -190,6 +190,28 @@ function buildPrompt(proposal, summary, feedback, previousHtml) {
     `Problem Solved: ${proposal.problem_solved || ''}`,
     summary ? `User Context: ${summary}` : '',
   ].filter(Boolean).join('\n');
+
+  // Self-inspect: audit the existing HTML and fix all bugs automatically
+  if (selfInspect && previousHtml) {
+    return `You are a QA engineer auditing an HTML prototype for bugs. Here is the CURRENT HTML:
+
+\`\`\`html
+${previousHtml}
+\`\`\`
+
+This prototype is for the following product:
+${meta}
+
+AUDIT CHECKLIST — find and fix every issue you spot:
+1. Navigation: does every nav button call showScreen() with the correct screen ID? Are all referenced screen IDs actually defined as <div id="screen-NAME"> elements?
+2. Missing screens: does the prototype show ALL the key features listed above? Add any missing screens.
+3. Broken JS: any onclick handlers referencing undefined functions? Any syntax errors? Fix them.
+4. Dead links: any <a href="..."> pointing to a file path that doesn't exist? Replace with showScreen() calls.
+5. CSS issues: any screen that should be visible but is hidden? Any .screen divs missing the right display logic?
+6. DOMContentLoaded: is there a handler that shows the first screen on load?
+
+OUTPUT: the fully corrected HTML file with all bugs fixed and all screens present and navigable. Do not explain — just output the fixed HTML.`;
+  }
 
   // Feedback with previous HTML = surgical edit, not full regeneration
   if (feedback && previousHtml) {
