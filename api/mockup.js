@@ -7,25 +7,61 @@ REQUIREMENTS:
 - Output ONLY a complete, valid HTML file. No explanation, no markdown fences, no extra text — just raw HTML.
 - Include ALL CSS and JS inline (no external dependencies except Tailwind CDN).
 - Use: <script src="https://cdn.tailwindcss.com"></script>
-- The VERY FIRST tag inside <head> must be: <base target="_blank"> — this prevents any accidental link navigation.
+- The VERY FIRST tag inside <head> must be: <base target="_blank">
 - Build a REALISTIC, PROFESSIONAL app prototype — not a wireframe. It should look like a real shipped product.
-- Show ALL key screens/pages from the proposal, each navigable via sidebar, tab bar, or bottom nav.
-- Include realistic placeholder data that matches the product's purpose (real-looking names, values, entries — not "Lorem ipsum").
-- Mobile-responsive layout (works at 375px width, designed mobile-first for mobile apps, desktop-first for dashboards/web apps).
-- Working screen navigation using JS (clicking nav items shows/hides screens — no page reloads).
-- Include the product's name and a matching color theme appropriate to its category.
-- Use smooth transitions between screens (CSS transitions).
-- Show at least 3–5 distinct screens covering the product's core features.
-- App should feel "alive" — hover states, realistic data, proper spacing, icons (use emoji or simple SVG).
+- Show ALL key screens/pages from the proposal. EVERY screen must be fully built out with realistic content.
+- Include realistic placeholder data (real-looking names, values, entries — not "Lorem ipsum").
+- Mobile-responsive layout (375px width for mobile apps, desktop-first for dashboards/web apps).
+- Include the product's name and a matching color theme.
+- Use smooth CSS transitions between screens.
+- Show at least 3–5 distinct screens covering ALL core features.
+- App should feel "alive" — hover states, realistic data, proper spacing, emoji/SVG icons.
 
-CRITICAL NAVIGATION RULES — YOU MUST FOLLOW THESE OR THE PREVIEW WILL BREAK:
-- ALL screen navigation MUST use JavaScript show/hide logic ONLY. Example: onclick="showScreen('dashboard')"
-- NEVER use <a href="pagename.html"> or any href that points to a file/path. Those URLs don't exist and will break the preview.
-- NEVER use window.location, location.href, location.replace(), or ANY navigation API.
-- NEVER use history.pushState() or history.replaceState().
-- For any link-style element, use: <a href="javascript:void(0)" onclick="showScreen('name')"> or a <button> with onclick.
-- The entire app must live in one HTML file with all screens as hidden <div> elements toggled by JS.
-- The showScreen() function should add/remove a CSS class to show/hide screen divs — no redirects ever.
+════════════════════════════════════════════════════════════
+MANDATORY NAVIGATION PATTERN — COPY THIS EXACTLY, NO EXCEPTIONS
+════════════════════════════════════════════════════════════
+
+You MUST use this exact JavaScript navigation system. Do not invent your own.
+
+STEP 1 — Give every screen div an id like "screen-NAME" and the class "screen":
+  <div id="screen-dashboard" class="screen">...dashboard content...</div>
+  <div id="screen-habits"    class="screen">...habits content...</div>
+  <div id="screen-nutrition" class="screen">...nutrition content...</div>
+
+STEP 2 — In your <style> tag, add this CSS:
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+STEP 3 — Add this EXACT JavaScript function in your <script> tag:
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(function(s) {
+      s.classList.remove('active');
+    });
+    var target = document.getElementById('screen-' + name);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(function(n) {
+      n.classList.toggle('nav-active', n.getAttribute('data-screen') === name);
+    });
+  }
+
+STEP 4 — On page load, show the first screen:
+  document.addEventListener('DOMContentLoaded', function() { showScreen('dashboard'); });
+  (replace 'dashboard' with whatever your first screen's name is)
+
+STEP 5 — Every nav link MUST look exactly like this:
+  <button class="nav-link" data-screen="habits" onclick="showScreen('habits')">🌿 Habits</button>
+  — Use <button> elements (NOT <a> tags) for ALL navigation
+  — The data-screen attribute MUST match the screen name exactly
+  — The onclick MUST call showScreen() with the exact same name
+
+FORBIDDEN — these will break the preview and must NEVER appear:
+  ✗ <a href="habits.html">  ← breaks iframe
+  ✗ window.location = ...   ← breaks iframe
+  ✗ location.href = ...     ← breaks iframe
+  ✗ history.pushState(...)  ← breaks iframe
+  ✗ Any href pointing to a file path
+
+════════════════════════════════════════════════════════════
 
 DESIGN GUIDELINES BY TYPE:
 - Habit/wellness tracker: clean white/pastel background, progress rings, streak counters, checklist items
