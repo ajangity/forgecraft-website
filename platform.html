@@ -407,7 +407,7 @@ pre code{background:none;padding:0}
 mermaid.initialize({startOnLoad:false,theme:'dark',themeVariables:{primaryColor:'#3b82f6',primaryTextColor:'#e2e8f0',primaryBorderColor:'#1e40af',lineColor:'#475569',secondaryColor:'#8b5cf6',tertiaryColor:'#141428',background:'#07070f',mainBkg:'#141428',nodeBorder:'#1e40af',clusterBkg:'#0e0e1c',titleColor:'#e2e8f0',edgeLabelBackground:'#141428'}});
 
 let history=[],phase='discovery',busy=false,mmdN=0,curSch=null,curBuild=null,curProp=null,curMockup=null,__sessionToken='',__user=null;
-let curSessionId=null,_saveTimer=null;
+let curSessionId=null,_saveTimer=null,_mockupIterations=0,_messagesCount=0,_questionsAsked=0,_recId=null;
 const $=id=>document.getElementById(id);
 const phaseIdx={discovery:0,proposal:1,preview:2,schematic:3,build:4,test:5};
 const phaseProgress={discovery:5,proposal:22,preview:42,schematic:60,build:80,test:100};
@@ -433,6 +433,7 @@ async function send(){
   $('inp').value='';$('inp').style.height='auto';
   addMsg('user',text);
   history.push({role:'user',content:text});
+  _messagesCount++;
   await callChat();
 }
 
@@ -457,10 +458,22 @@ async function callChat(){
 
 function handleResp(d){
   switch(d.type){
-    case 'question':case'message':addMsg('ai',d.content);break;
+    case 'question':case'message':
+      addMsg('ai',d.content);
+      if(d.type==='question')_questionsAsked++;
+      break;
     case 'recommendation':
       addMsg('ai',d.content);
-      if(d.data){addRecommendation(d.data);}
+      if(d.data){
+        addRecommendation(d.data);
+        // Record that a recommendation was shown
+        const ep=d.data.existing_product||{};
+        recordAnalytics('recommendation_shown',{
+          recommended_app: ep.name||'Unknown',
+          app_category: ep.category||null,
+          original_description: history.filter(m=>m.role==='user')[0]?.content||null
+        }).then(r=>{ if(r?.rec_id)_recId=r.rec_id; });
+      }
       break;
     case 'proposal':
       addMsg('ai',d.content);if(d.data){curProp=d.data;addProposal(d.data);}
@@ -514,8 +527,11 @@ async function chooseRecommendation(choice, btn){
   } else {
     text='I want a customized version tailored to my specific needs — let me tell you what I want differently.';
   }
+  // Record which path the user chose
+  recordAnalytics('recommendation_chosen',{rec_id:_recId, choice});
   addMsg('user',text);
   history.push({role:'user',content:text});
+  _messagesCount++;
   await callChat();
 }
 
@@ -547,10 +563,33 @@ async function confirmProp(yes,btn){
   btn.closest('.p-btns').querySelectorAll('button').forEach(b=>b.disabled=true);
   const text=yes?'Yes! Show me a preview first.':'Not quite right — let me explain what\'s missing.';
   addMsg('user',text);history.push({role:'user',content:text});
+  _messagesCount++;
   if(yes && curProp){
-    // Generate UI mockup first so user can see & approve before building
+    // Record proposal confirmed
+    recordAnalytics('proposal_confirmed',{
+      proposal: curProp,
+      first_message: history.filter(m=>m.role==='user')[0]?.content||null,
+      conversation_summary: history.filter(m=>m.role==='user').map(m=>m.content).join(' | ')
+    });
+    recordAnalytics('engagement_update',{
+      phases_reached:['discovery','proposal'],
+      messages_sent:_messagesCount,
+      discovery_questions_asked:_questionsAsked,
+      proposal_rejected:false
+    });
     await callMockup();
   } else {
+    // Record proposal rejected — still valuable signal
+    recordAnalytics('proposal_rejected',{
+      proposal: curProp,
+      first_message: history.filter(m=>m.role==='user')[0]?.content||null
+    });
+    recordAnalytics('engagement_update',{
+      phases_reached:['discovery','proposal'],
+      messages_sent:_messagesCount,
+      discovery_questions_asked:_questionsAsked,
+      proposal_rejected:true
+    });
     await callChat();
   }
 }
@@ -696,6 +735,7 @@ async function submitMockupFeedback(){
   addMsg('user',fb);
   history.push({role:'user',content:'Feedback on UI preview: '+fb});
   $('mockup-feedback').closest('.msg').remove();
+  _mockupIterations++;
   await callMockup(fb);
 }
 
@@ -846,9 +886,12 @@ async function triggerBuild(){
     renderBuild(curBuild);
     unlockTab('tab-test');
     setPhase('build');saveSession();
+    recordAnalytics('build_completed',{build_data:curBuild,schematic:curSch});
+    recordAnalytics('engagement_update',{phases_reached:['discovery','proposal','preview','schematic','build'],messages_sent:_messagesCount,discovery_questions_asked:_questionsAsked,mockup_iterations:_mockupIterations});
     addMsg('ai',`&#x2705; **${e(curBuild.product_name||curSch.product_name)} is built!** Preview it in the Build panel. Ready to run tests whenever you are.`);
   }catch(err){
     bc.innerHTML=`<div class="build-status"><div style="font-size:36px">&#x26A0;&#xFE0F;</div><div class="build-log" style="color:var(--danger)">${e(err.message)}</div></div>`;
+    recordAnalytics('build_failed',{error_message:err.message,schematic:curSch});
     addMsg('ai','Build hit an error — check the browser console.');console.error(err);
   }
 }
@@ -926,6 +969,8 @@ async function triggerTest(){
     renderTests(data);
     const total=(data.test_categories||[]).reduce((n,c)=>n+(c.test_cases?.length||0),0);
     setPhase('test');saveSession();
+    recordAnalytics('tests_generated',{product_name:curSch?.product_name,product_type:curSch?.product_type,is_software:curSch?.is_software!==false,test_data:data,usage_scenarios:curProp?.usage_scenarios||[]});
+    recordAnalytics('engagement_update',{phases_reached:['discovery','proposal','preview','schematic','build','test'],completed_full_flow:true,messages_sent:_messagesCount,discovery_questions_asked:_questionsAsked,mockup_iterations:_mockupIterations});
     addMsg('ai',`&#x1F389; Testing complete! **${total} test cases** across ${(data.test_categories||[]).length} categories + full writeup in the Testing panel.`);
   }catch(err){
     tc.innerHTML=`<div class="build-status"><div style="font-size:36px">&#x26A0;&#xFE0F;</div><div class="build-log" style="color:var(--danger)">${e(err.message)}</div></div>`;
@@ -1122,6 +1167,21 @@ async function saveApiKey(){
   btn.disabled=false; btn.textContent='Save & Start Building ⚡';
 }
 
+// ── Analytics: fire-and-forget event recording ────────────────────────────────
+async function recordAnalytics(event, data){
+  if(!__sessionToken||!__user)return;
+  try{
+    fetch('/api/analytics',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+__sessionToken},
+      body:JSON.stringify({event, data:{
+        session_id:curSessionId||undefined,
+        ...data
+      }})
+    }).catch(()=>{}); // intentionally fire-and-forget
+  }catch(ex){ /* never let analytics break the product */ }
+}
+
 // ── Sessions: save / load / UI ────────────────────────────────────────────────
 function sessionPayload(){
   return {
@@ -1310,6 +1370,7 @@ function startNewSession(){
   if(history.length>0&&!confirm('Start a new project? Your current session is saved in My Projects.'))return;
   // Reset all state
   curSessionId=null;history=[];curProp=null;curMockup=null;curSch=null;curBuild=null;phase='discovery';
+  _messagesCount=0;_questionsAsked=0;_mockupIterations=0;_recId=null;
   const msgEl=$('messages');msgEl.innerHTML='';msgEl.style.display='none';
   $('welcome').style.display='';
   setPhase('discovery');
