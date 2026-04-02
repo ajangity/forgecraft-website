@@ -70,6 +70,84 @@ RULES:
 const SUPABASE_URL = 'https://iwouaznczwhojuvmignr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b3Vhem5jendob2p1dm1pZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDQzNTAsImV4cCI6MjA4OTk4MDM1MH0.FJ4hUYMGLkmiYcjYp8NnfsrtD-hHI8U59uYBWTtrEko';
 
+// Derive category string from proposal data (mirrors analytics.js)
+function deriveCategory(obj) {
+  if (!obj) return null;
+  const text = [obj.product_name, obj.tagline, obj.description, obj.problem_solved,
+    ...(obj.key_features || [])].join(' ').toLowerCase();
+  if (text.match(/habit|streak|routine|daily check/)) return 'habit_tracking';
+  if (text.match(/budget|expense|spend|finance|money|saving/)) return 'personal_finance';
+  if (text.match(/workout|fitness|exercise|gym|training/)) return 'fitness';
+  if (text.match(/nutrition|calor|meal|food|diet|macro/)) return 'nutrition';
+  if (text.match(/task|todo|project|kanban|deadline/)) return 'task_management';
+  if (text.match(/note|journal|diary|writing|knowledge/)) return 'notes_journaling';
+  if (text.match(/sleep|wake|rest|bedtime/)) return 'sleep';
+  if (text.match(/social|post|content|schedule|instagram|twitter/)) return 'social_media';
+  if (text.match(/automat|script|workflow|trigger|cron/)) return 'automation';
+  if (text.match(/dashboard|analytic|report|metric|data/)) return 'analytics_dashboard';
+  if (text.match(/ecommerce|shop|product|cart|inventory|store/)) return 'ecommerce';
+  if (text.match(/health|medical|symptom|wellness/)) return 'health_wellness';
+  if (text.match(/learn|study|flash|quiz|course|education/)) return 'education';
+  if (text.match(/crm|contact|customer|lead|sales/)) return 'crm_sales';
+  if (text.match(/map|location|navigate|route|gps/)) return 'navigation';
+  return null;
+}
+
+// Fetch schematic context: confirmed products + top tech stacks for this category/type
+async function fetchSchematicContext(category, productType) {
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
+  try {
+    const categoryFilter = category ? `&product_category=eq.${encodeURIComponent(category)}` : '';
+    const typeFilter = productType ? `&product_type=eq.${encodeURIComponent(productType)}` : '';
+
+    // Confirmed products in same category/type (most recent 5)
+    const [confirmedRes, typeRes] = await Promise.all([
+      fetch(
+        `${SUPABASE_URL}/rest/v1/fc_product_ideas?user_confirmed=eq.true${categoryFilter}${typeFilter}&order=recorded_at.desc&limit=5&select=product_name,key_features,tech_stack,problem_solved`,
+        { headers: { 'Authorization': `Bearer ${SERVICE_KEY}`, 'apikey': SERVICE_KEY } }
+      ),
+      // Broader type query for tech stack frequency (up to 30 confirmed products)
+      fetch(
+        `${SUPABASE_URL}/rest/v1/fc_product_ideas?user_confirmed=eq.true${typeFilter}&limit=30&select=tech_stack`,
+        { headers: { 'Authorization': `Bearer ${SERVICE_KEY}`, 'apikey': SERVICE_KEY } }
+      )
+    ]);
+
+    const confirmedProducts = confirmedRes.ok ? await confirmedRes.json() : [];
+    const typeProducts = typeRes.ok ? await typeRes.json() : [];
+
+    if (!confirmedProducts.length && !typeProducts.length) return null;
+
+    // Aggregate tech stack frequencies
+    const stackCounts = {};
+    for (const p of typeProducts) {
+      for (const t of (p.tech_stack || [])) {
+        stackCounts[t] = (stackCounts[t] || 0) + 1;
+      }
+    }
+    const topStacks = Object.entries(stackCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([tech]) => tech);
+
+    // Aggregate feature frequencies
+    const featureCounts = {};
+    for (const p of confirmedProducts) {
+      for (const f of (p.key_features || [])) {
+        featureCounts[f] = (featureCounts[f] || 0) + 1;
+      }
+    }
+    const topFeatures = Object.entries(featureCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([feature]) => feature);
+
+    return { confirmedProducts, topStacks, topFeatures };
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -94,6 +172,30 @@ export default async function handler(req, res) {
   const { proposal, conversation_summary } = req.body;
   if (!proposal) return res.status(400).json({ error: 'Missing proposal data' });
 
+  // Fetch platform intelligence from historical confirmed products
+  const category = deriveCategory(proposal);
+  const platformCtx = await fetchSchematicContext(category, proposal.product_type);
+
+  // Build platform intelligence block if we have data
+  let platformBlock = '';
+  if (platformCtx && (platformCtx.confirmedProducts.length > 0 || platformCtx.topStacks.length > 0)) {
+    const lines = ['\nPLATFORM INTELLIGENCE — patterns from previously confirmed ForgeCraft products:'];
+    if (platformCtx.topStacks.length > 0) {
+      lines.push(`Proven tech stacks for ${proposal.product_type || 'this type'}: ${platformCtx.topStacks.join(', ')}`);
+    }
+    if (platformCtx.topFeatures.length > 0) {
+      lines.push(`Commonly requested features in this category: ${platformCtx.topFeatures.join(', ')}`);
+    }
+    if (platformCtx.confirmedProducts.length > 0) {
+      lines.push('Similar confirmed products for reference:');
+      for (const p of platformCtx.confirmedProducts.slice(0, 3)) {
+        lines.push(`  • ${p.product_name}: ${p.problem_solved || ''} — stack: ${(p.tech_stack || []).join(', ')}`);
+      }
+    }
+    lines.push('Use these patterns as grounding — prefer proven stacks unless there is a strong reason to deviate.');
+    platformBlock = lines.join('\n');
+  }
+
   const userPrompt = `Generate a complete technical schematic for this confirmed product proposal:
 
 PRODUCT: ${proposal.product_name}
@@ -110,6 +212,7 @@ TECH STACK HINTS:
 ${(proposal.tech_stack || []).join(', ')}
 
 ${conversation_summary ? `USER CONTEXT FROM CONVERSATION:\n${conversation_summary}` : ''}
+${platformBlock}
 
 Generate the full schematic now. Return only the JSON object.`;
 

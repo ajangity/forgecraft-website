@@ -87,6 +87,67 @@ REQUIREMENTS:
 const SUPABASE_URL_T = 'https://iwouaznczwhojuvmignr.supabase.co';
 const SUPABASE_ANON_KEY_T = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b3Vhem5jendob2p1dm1pZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDQzNTAsImV4cCI6MjA4OTk4MDM1MH0.FJ4hUYMGLkmiYcjYp8NnfsrtD-hHI8U59uYBWTtrEko';
 
+// Fetch testing context: proven test categories and recurring scenarios from past strategies
+async function fetchTestingContext(productType) {
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY_T;
+  try {
+    const typeFilter = productType ? `&product_type=eq.${encodeURIComponent(productType)}` : '';
+    const res = await fetch(
+      `${SUPABASE_URL_T}/rest/v1/fc_testing_strategies?total_test_cases=gte.5${typeFilter}&order=recorded_at.desc&limit=20&select=product_name,product_type,test_categories,total_test_cases,key_scenarios`,
+      { headers: { 'Authorization': `Bearer ${SERVICE_KEY}`, 'apikey': SERVICE_KEY } }
+    );
+    if (!res.ok) return null;
+    const strategies = await res.json();
+    if (!strategies.length) return null;
+
+    // Aggregate category frequencies and sample test names
+    const categoryPatterns = {};
+    for (const strategy of strategies) {
+      for (const cat of (strategy.test_categories || [])) {
+        const name = cat.category || cat.name;
+        if (!name) continue;
+        if (!categoryPatterns[name]) categoryPatterns[name] = { count: 0, testNames: [], totalCases: 0 };
+        categoryPatterns[name].count++;
+        categoryPatterns[name].totalCases += (cat.test_cases?.length || 0);
+        const sample = (cat.test_cases || []).slice(0, 3).map(tc => tc.name).filter(Boolean);
+        categoryPatterns[name].testNames.push(...sample);
+      }
+    }
+
+    const topCategories = Object.entries(categoryPatterns)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 8)
+      .map(([category, data]) => ({
+        category,
+        seen_in: data.count,
+        avg_cases: Math.round(data.totalCases / data.count),
+        examples: [...new Set(data.testNames)].slice(0, 4)
+      }));
+
+    // Recurring scenarios across multiple products
+    const scenarioCounts = {};
+    for (const strategy of strategies) {
+      for (const s of (strategy.key_scenarios || [])) {
+        const key = String(s).toLowerCase().slice(0, 80);
+        scenarioCounts[key] = (scenarioCounts[key] || 0) + 1;
+      }
+    }
+    const recurringScenarios = Object.entries(scenarioCounts)
+      .filter(([, count]) => count > 1)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([scenario]) => scenario);
+
+    // Gold standard: highest test coverage
+    const gold = [...strategies].sort((a, b) => (b.total_test_cases || 0) - (a.total_test_cases || 0))[0];
+    const avgCoverage = Math.round(strategies.reduce((sum, s) => sum + (s.total_test_cases || 0), 0) / strategies.length);
+
+    return { topCategories, recurringScenarios, gold, avgCoverage, strategiesAnalyzed: strategies.length };
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -109,6 +170,29 @@ export default async function handler(req, res) {
 
   const { schematic, build_result, is_software, usage_scenarios } = req.body;
   if (!schematic) return res.status(400).json({ error: 'Missing schematic' });
+
+  // Fetch platform testing intelligence from historical strategies
+  const testingCtx = await fetchTestingContext(schematic.product_type);
+
+  // Build proven patterns block
+  let testingIntelBlock = '';
+  if (testingCtx && testingCtx.topCategories.length > 0) {
+    const lines = ['\nPLATFORM TESTING INTELLIGENCE — patterns from previously tested ForgeCraft products:'];
+    lines.push(`Based on ${testingCtx.strategiesAnalyzed} prior products (avg ${testingCtx.avgCoverage} test cases each).`);
+    lines.push('Top test categories seen across similar products:');
+    for (const cat of testingCtx.topCategories) {
+      const exStr = cat.examples.length ? ` (e.g. ${cat.examples.join(', ')})` : '';
+      lines.push(`  • ${cat.category} — seen in ${cat.seen_in} products, avg ${cat.avg_cases} test cases${exStr}`);
+    }
+    if (testingCtx.recurringScenarios.length > 0) {
+      lines.push(`Recurring edge cases across products: ${testingCtx.recurringScenarios.join('; ')}`);
+    }
+    if (testingCtx.gold) {
+      lines.push(`Gold standard benchmark: "${testingCtx.gold.product_name}" had ${testingCtx.gold.total_test_cases} test cases — aim to match or exceed this.`);
+    }
+    lines.push('Ensure all categories above are covered in your test_categories output where applicable to this product.');
+    testingIntelBlock = lines.join('\n');
+  }
 
   const testPrompt = `Generate exhaustive testing for this product.
 
@@ -138,6 +222,7 @@ INSTRUCTIONS:
 2. Then synthesize at least 15–20 additional edge cases the user didn't mention — boundary conditions, invalid input, empty states, data loss scenarios, concurrent access, accessibility, performance under load, security vulnerabilities, etc.
 3. Generate real, runnable automated test code (Playwright for web, Jest for unit tests, etc.)
 4. Be extremely specific to THIS product
+${testingIntelBlock}
 
 Return only JSON.`;
 
